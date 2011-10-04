@@ -1,9 +1,16 @@
 package mapthatset.mastermind;
 
 import java.util.ArrayList;
-import mapthatset.sim.*;
+import java.util.Map;
+import java.util.Set;
+
+import mapthatset.sim.Guesser;
+import mapthatset.sim.GuesserAction;
 
 public class MastermindGuesser extends Guesser {
+	Map<Integer, Set<Integer>> possibilities;
+	Map<Set<Integer>, Set<Integer>> rules;
+	
 	int intMappingLength;
 	int intLastQueryIndex = 0;
 	ArrayList<Integer> alGuess = new ArrayList<Integer>();
@@ -23,10 +30,12 @@ public class MastermindGuesser extends Guesser {
 			for (int intGuessingElement : alGuess) {
 				strGuessing += intGuessingElement + ", ";
 			}
+			System.out.println( "Guessing: " + strGuessing.substring( 0, strGuessing.length() - 1 ) );
 			gscReturn = new GuesserAction("g", alGuess);
 		} else {
 			ArrayList<Integer> alQueryContent = new ArrayList<Integer>();
 			alQueryContent.add(intLastQueryIndex);
+			System.out.println( "Querying: " + intLastQueryIndex );
 			gscReturn = new GuesserAction("q", alQueryContent);
 		}
 		return gscReturn;
@@ -38,5 +47,27 @@ public class MastermindGuesser extends Guesser {
 
 	public String getID() {
 		return strID;
+	}
+	
+	//TODO(najaf)
+	public Set<Integer> createGuess(){
+		return null;
+	}
+	
+	//TODO(riddhi)
+	public void updateRules(){
+		// using possibilities
+		// update rules where possibilities are only 1
+		return;
+	}
+	
+	//TODO(akivab)
+	public void updatePossibilities(Map<Set<Integer>, Set<Integer>> guess){
+		// using the results of some guess, we update possibilities
+	}
+	
+	//TODO(hans)
+	public boolean isSolutionReached(){
+		return false;
 	}
 }

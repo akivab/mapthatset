@@ -36,11 +36,19 @@ public class MastermindGuesser extends Guesser {
 			ArrayList<Integer> alQueryContent = new ArrayList<Integer>();
 			alQueryContent.add(intLastQueryIndex);
 			System.out.println( "Querying: " + intLastQueryIndex );
+			if(intLastQueryIndex == 1) {
+				for(int i=1; i<=intMappingLength; i++) {
+					alQueryContent.add(i);
+				}
+			} else {
+				//TODO: change this to query randomly, or in pairs
+				alQueryContent.add(intLastQueryIndex-1);
+			}
 			gscReturn = new GuesserAction("q", alQueryContent);
 		}
 		return gscReturn;
 	}
-
+	
 	public void setResult(ArrayList<Integer> alResult) {
 		alGuess.add(alResult.get(0));
 	}

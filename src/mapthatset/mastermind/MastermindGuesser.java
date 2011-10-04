@@ -26,10 +26,21 @@ public class MastermindGuesser extends Guesser {
 			gscReturn = new GuesserAction("g", alGuess);
 		} else {
 			ArrayList<Integer> alQueryContent = new ArrayList<Integer>();
-			alQueryContent.add(intLastQueryIndex);
+			if(intLastQueryIndex == 1) {
+				for(int i=1; i<=intMappingLength; i++) {
+					alQueryContent.add(i);
+				}
+			} else {
+				//TODO: change this to query randomly, or in pairs
+				alQueryContent.add(intLastQueryIndex-1);
+			}
 			gscReturn = new GuesserAction("q", alQueryContent);
 		}
 		return gscReturn;
+	}
+	
+	private int getRandom() {
+		
 	}
 
 	public void setResult(ArrayList<Integer> alResult) {

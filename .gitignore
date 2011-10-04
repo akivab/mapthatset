@@ -1,0 +1,6 @@
+*.class
+*~
+*#*#
+mapthatset/bin
+*.swp
+*.class

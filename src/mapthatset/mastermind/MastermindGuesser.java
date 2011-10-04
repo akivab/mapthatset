@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import mapthatset.sim.Guesser;
 import mapthatset.sim.GuesserAction;
@@ -57,15 +58,37 @@ public class MastermindGuesser extends Guesser {
 	 * Creates a guess (for input into the mapper) Output of mapper will be sent
 	 * to setResult.
 	 */
-	public List<Integer> createGuess() {
-		// stupid guesser for testing
-		// ArrayList<Integer> guess = new ArrayList<Integer>();
-		// guess.add(currInd % mapLength);
-		// guess.add(currInd % mapLength + 1);
-		// return guess;
-		return null;
+	public ArrayList<Integer> createGuess() {
+		
+		ArrayList<Integer> randomList= new ArrayList<Integer>();
+		randomList=returnRandomNumbers(mapLength,1);
+		
+		int numOfDomainElements = randomList.get(0);
+		return returnRandomNumbers(mapLength,numOfDomainElements);
+	
 	}
+	
+	  /*
+	   * From range 1 to r generate n distinct random numbers
+	   */
+		 public static ArrayList<Integer> returnRandomNumbers( int r,int n) {
+			 ArrayList<Integer> randomList = new ArrayList<Integer>();
+		    int i=0; 
+		    Integer randomInt=0;
+		    while (i<n) {
+		   	    Random randomGenerator = new Random();			
+		    	randomInt = randomGenerator.nextInt(r);
+		    	randomInt++;
+		       if(!randomList.contains(randomInt)) {
+		    		i++;
+		    		randomList.add(randomInt);
+		    	}
+		    }
+		       return randomList;
+		}
 
+		 
+		 
 	// TODO(riddhi)
 	/**
 	 * Update the rules for this game based on possibilities

@@ -26,8 +26,9 @@ public class MastermindGuesser extends Guesser {
 	public void startNewMapping(int mapLength) {
 		this.mapLength = mapLength;
 		possibilities = new HashMap<Integer, List<Integer>>();
-		for (int i = 1; i <= mapLength; i++)
+		for (int i = 1; i <= mapLength; i++) {
 			possibilities.put(i, new ArrayList<Integer>());
+		}
 		rules = new HashMap<List<Integer>, List<Integer>>();
 		currentGuess = null;
 	}
@@ -45,8 +46,8 @@ public class MastermindGuesser extends Guesser {
 			todo = "g";
 			currentGuess = (ArrayList<Integer>) finalGuess();
 		}
-//		System.out.println();
-//		System.out.println(todo + ":" + currentGuess);
+		// System.out.println();
+		// System.out.println(todo + ":" + currentGuess);
 		return new GuesserAction(todo, currentGuess);
 	}
 
@@ -117,6 +118,26 @@ public class MastermindGuesser extends Guesser {
 					}
 	}
 
+	public void _updateRules() {
+		// using possibilities // update rules where possibilities are only 1
+		System.out.println("rules changed");
+		for (int i = 1; i <= possibilities.size(); i++) {
+			if (possibilities.get(i).size() == 1) {
+				Iterator<List<Integer>> itr = rules.keySet().iterator();
+				while (itr.hasNext()) {
+					List<Integer> k = itr.next();
+					if (k.contains(i)) {
+						List<Integer> inf = rules.get(k);
+						inf.remove(possibilities.get(i));
+						k.remove(i);
+						rules.remove(k);
+						rules.put(k, inf);
+					}
+				}
+			}
+		}
+	}
+
 	// TODO(akivab)
 	/**
 	 * Updates the table of possibilities. If we got [1,2,3] -> [3,4], for
@@ -131,12 +152,15 @@ public class MastermindGuesser extends Guesser {
 	public void updatePossibilities(List<Integer> guess, List<Integer> result) {
 		for (Integer key : guess) {
 			List<Integer> poss = possibilities.get(key);
-			if (poss.size() == 0)
+			if (poss.size() == 0) {
 				poss.addAll(result);
-			else
-				for (Iterator<Integer> itr = poss.iterator(); itr.hasNext();)
-					if (!result.contains(itr.next()))
+			} else {
+				for (Iterator<Integer> itr = poss.iterator(); itr.hasNext();) {
+					if (!result.contains(itr.next())) {
 						itr.remove();
+					}
+				}
+			}
 		}
 	}
 
@@ -152,14 +176,15 @@ public class MastermindGuesser extends Guesser {
 		return toReturn;
 	}
 
-	// TODO(hans)
 	/**
-	 * Returns true if the final solution has been reached
+	 * Returns true if the final solution has been reached. That is, if each
+	 * number maps to only one possibility, a solution has been found.
 	 */
 	public boolean solutionReached() {
 		for (Integer i : possibilities.keySet()) {
-			if (possibilities.get(i).size() != 1)
+			if (possibilities.get(i).size() != 1) {
 				return false;
+			}
 		}
 		return true;
 	}

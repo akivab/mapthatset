@@ -26,8 +26,9 @@ public class MastermindGuesser extends Guesser {
 	public void startNewMapping(int mapLength) {
 		this.mapLength = mapLength;
 		possibilities = new HashMap<Integer, List<Integer>>();
-		for (int i = 1; i <= mapLength; i++)
+		for (int i = 1; i <= mapLength; i++) {
 			possibilities.put(i, new ArrayList<Integer>());
+		}
 		rules = new HashMap<List<Integer>, List<Integer>>();
 		currentGuess = null;
 	}
@@ -68,24 +69,25 @@ public class MastermindGuesser extends Guesser {
 	
 	}
 	
-	  /*
-	   * From range 1 to r generate n distinct random numbers
-	   */
-		 public static ArrayList<Integer> returnRandomNumbers( int r,int n) {
-			 ArrayList<Integer> randomList = new ArrayList<Integer>();
-		    int i=0; 
-		    Integer randomInt=0;
-		    while (i<n) {
-		   	    Random randomGenerator = new Random();			
-		    	randomInt = randomGenerator.nextInt(r);
-		    	randomInt++;
-		       if(!randomList.contains(randomInt)) {
-		    		i++;
-		    		randomList.add(randomInt);
-		    	}
-		    }
-		       return randomList;
-		}
+	/*
+	 * From range 1 to r generate n distinct random numbers
+	 */
+	public static ArrayList<Integer> returnRandomNumbers( int r,int n) {
+	  ArrayList<Integer> randomList = new ArrayList<Integer>();
+	  int i=0; 
+	  Integer randomInt=0;
+	  while (i<n) {
+	    Random randomGenerator = new Random();			
+	  	randomInt = randomGenerator.nextInt(r);
+	  	randomInt++;
+	  	
+	    if(!randomList.contains(randomInt)) {
+	  	  i++;
+	  	  randomList.add(randomInt);
+	  	}
+	  }
+    return randomList;
+	}
 
 		 
 		 
@@ -113,12 +115,16 @@ public class MastermindGuesser extends Guesser {
 	public void updatePossibilities(List<Integer> guess, List<Integer> result) {
 		for (Integer key : guess) {
 			List<Integer> poss = possibilities.get(key);
-			if (poss.size() == 0)
+			if (poss.size() == 0) {
 				poss.addAll(result);
-			else
-				for (Iterator<Integer> itr = poss.iterator(); itr.hasNext();)
-					if (!result.contains(itr.next()))
+			}
+			else {
+				for (Iterator<Integer> itr = poss.iterator(); itr.hasNext();) {
+					if (!result.contains(itr.next())) {
 						itr.remove();
+					}
+				}
+			}
 		}
 	}
 
@@ -134,18 +140,18 @@ public class MastermindGuesser extends Guesser {
 		return toReturn;
 	}
 
-	// TODO(hans)
 	/**
-	 * Returns true if the final solution has been reached
+	 * Returns true if the final solution has been reached.
+	 * That is, if each number maps to only one possibility,
+	 * a solution has been found.
 	 */
 	public boolean solutionReached() {
-		return false;
-		
-		// for (Integer i : possibilities.keySet()) {
-		// if(possibilities.get(i).size() != 1)
-		// return false;
-		// }
-		// return true;
+		for (Integer i : possibilities.keySet()) {
+		  if(possibilities.get(i).size() != 1) {
+		    return false;
+		  }
+		}
+		return true;
 	}
 
 	/**

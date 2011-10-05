@@ -40,13 +40,26 @@ public class MastermindGuesser extends Guesser {
 		String todo = "q";
 
 		if (!solutionReached()) {
-			currentGuess = (ArrayList<Integer>) createGuess();
+			currentGuess = (ArrayList<Integer>) createGuessFromThoseWithManyPossibilities();
 		} else {
 			todo = "g";
 			currentGuess = (ArrayList<Integer>) finalGuess();
 		}
-		System.out.println("\n" + todo + ":" + currentGuess);
+//		System.out.println();
+//		System.out.println(todo + ":" + currentGuess);
 		return new GuesserAction(todo, currentGuess);
+	}
+
+	public ArrayList<Integer> createGuessFromThoseWithManyPossibilities() {
+		ArrayList<Integer> toReturn = new ArrayList<Integer>();
+		for (Integer i : possibilities.keySet()) {
+			int size = possibilities.get(i).size();
+			if (size == 0 || size > 1) // nothing seen, might want to add!
+				toReturn.add(i);
+		}
+		while (toReturn.size() > 1 && rules.get(toReturn) != null)
+			toReturn.remove((int) (toReturn.size() * Math.random()));
+		return toReturn;
 	}
 
 	public String getID() {
@@ -59,44 +72,49 @@ public class MastermindGuesser extends Guesser {
 	 * to setResult.
 	 */
 	public ArrayList<Integer> createGuess() {
-		
-		ArrayList<Integer> randomList= new ArrayList<Integer>();
-		randomList=returnRandomNumbers(mapLength,1);
-		
-		int numOfDomainElements = randomList.get(0);
-		return returnRandomNumbers(mapLength,numOfDomainElements);
-	
-	}
-	
-	  /*
-	   * From range 1 to r generate n distinct random numbers
-	   */
-		 public static ArrayList<Integer> returnRandomNumbers( int r,int n) {
-			 ArrayList<Integer> randomList = new ArrayList<Integer>();
-		    int i=0; 
-		    Integer randomInt=0;
-		    while (i<n) {
-		   	    Random randomGenerator = new Random();			
-		    	randomInt = randomGenerator.nextInt(r);
-		    	randomInt++;
-		       if(!randomList.contains(randomInt)) {
-		    		i++;
-		    		randomList.add(randomInt);
-		    	}
-		    }
-		       return randomList;
-		}
 
-		 
-		 
+		ArrayList<Integer> randomList = new ArrayList<Integer>();
+		randomList = returnRandomNumbers(mapLength, 1);
+
+		int numOfDomainElements = randomList.get(0);
+		return returnRandomNumbers(mapLength, numOfDomainElements);
+
+	}
+
+	/*
+	 * From range 1 to r generate n distinct random numbers
+	 */
+	public static ArrayList<Integer> returnRandomNumbers(int r, int n) {
+		ArrayList<Integer> randomList = new ArrayList<Integer>();
+		int i = 0;
+		Integer randomInt = 0;
+		while (i < n) {
+			Random randomGenerator = new Random();
+			randomInt = randomGenerator.nextInt(r);
+			randomInt++;
+			if (!randomList.contains(randomInt)) {
+				i++;
+				randomList.add(randomInt);
+			}
+		}
+		return randomList;
+	}
+
 	// TODO(riddhi)
 	/**
 	 * Update the rules for this game based on possibilities
 	 */
 	public void updateRules() {
-		// using possibilities
-		// update rules where possibilities are only 1
-		return;
+		for (Integer i : possibilities.keySet())
+			if (possibilities.get(i).size() == 1)
+				for (List<Integer> guess : rules.keySet())
+					if (guess.contains(i) && rules.get(guess) != null
+							&& guess.size() > 1) {
+						if (guess.size() == rules.get(guess).size())
+							rules.get(guess)
+									.remove(possibilities.get(i).get(0));
+						guess.remove(i);
+					}
 	}
 
 	// TODO(akivab)
@@ -139,13 +157,11 @@ public class MastermindGuesser extends Guesser {
 	 * Returns true if the final solution has been reached
 	 */
 	public boolean solutionReached() {
-		return false;
-		
-		// for (Integer i : possibilities.keySet()) {
-		// if(possibilities.get(i).size() != 1)
-		// return false;
-		// }
-		// return true;
+		for (Integer i : possibilities.keySet()) {
+			if (possibilities.get(i).size() != 1)
+				return false;
+		}
+		return true;
 	}
 
 	/**

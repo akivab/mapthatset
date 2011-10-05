@@ -96,10 +96,21 @@ public class MastermindGuesser extends Guesser {
 	 * Update the rules for this game based on possibilities
 	 */
 	public void updateRules() {
-		// using possibilities
-		// update rules where possibilities are only 1
-		return;
+	// using possibilities
+	// update rules where possibilities are only 1
+	for(int i=0;i<possibilities.size();i++){
+		if(possibilities.get(i).size() == 1){		
+			java.util.Iterator<Set<Integer>> itr = rules.keySet().iterator();
+			while(itr.hasNext()){
+				Set<Integer> k = itr.next();
+				if(k.contains(i)){
+					rules.get(k).remove(possibilities.get(i));
+					rules.remove(k);
+				}
+			}
+		}
 	}
+}
 
 	// TODO(akivab)
 	/**

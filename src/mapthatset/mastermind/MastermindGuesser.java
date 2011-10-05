@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import mapthatset.sim.Guesser;
 import mapthatset.sim.GuesserAction;
@@ -98,14 +99,18 @@ public class MastermindGuesser extends Guesser {
 	public void updateRules() {
 	// using possibilities
 	// update rules where possibilities are only 1
-	for(int i=0;i<possibilities.size();i++){
+		System.out.println("rules changed");
+	for(int i=1;i<=possibilities.size();i++){
 		if(possibilities.get(i).size() == 1){		
-			java.util.Iterator<Set<Integer>> itr = rules.keySet().iterator();
+			Iterator<List<Integer>> itr = rules.keySet().iterator();
 			while(itr.hasNext()){
-				Set<Integer> k = itr.next();
+				List<Integer> k =  itr.next();
 				if(k.contains(i)){
-					rules.get(k).remove(possibilities.get(i));
+					List<Integer> inf = rules.get(k);
+					inf.remove(possibilities.get(i));
+					k.remove(i);
 					rules.remove(k);
+					rules.put(k, inf);
 				}
 			}
 		}

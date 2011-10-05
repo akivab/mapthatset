@@ -15,7 +15,6 @@ public class MastermindGuesser extends Guesser {
 	Map<List<Integer>, List<Integer>> rules;
 
 	int mapLength;
-	// int currInd = 1;
 	ArrayList<Integer> currentGuess;
 	String strID = "Mastermind";
 

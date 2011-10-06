@@ -1,4 +1,4 @@
-package mapthatset.mastermind;
+package mapthatset.g6;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,8 +53,12 @@ public class MastermindGuesser extends Guesser {
 	public ArrayList<Integer> createGuessFromThoseWithManyPossibilities() {
 		ArrayList<Integer> toReturn = new ArrayList<Integer>();
 		for (Integer i : possibilities.keySet()) {
+			int count = 0;
+			for (List<Integer> j : rules.keySet())
+				if( j.contains(i))
+					count++;
 			int size = possibilities.get(i).size();
-			if (size == 0 || size > 1) // nothing seen, might want to add!
+			if ((size == 0 || size > 1 || count < 2))// nothing seen, might want to add!
 				toReturn.add(i);
 		}
 		while (toReturn.size() > 1 && rules.get(toReturn) != null)

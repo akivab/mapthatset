@@ -1,7 +1,7 @@
 Map That Set
 ============
 
-Hans, Ruddhi, Akiva, Najaf
+Hans, Riddhi, Akiva, Najaf
 --------------------------
 
 10/4/11

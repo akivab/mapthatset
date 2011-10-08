@@ -1,6 +1,7 @@
 package mapthatset.g6;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -45,8 +46,7 @@ public class MastermindGuesser extends Guesser {
 			todo = "g";
 			currentGuess = (ArrayList<Integer>) finalGuess();
 		}
-		// System.out.println();
-		// System.out.println(todo + ":" + currentGuess);
+		System.out.println("\n********\n" + todo + ":" + currentGuess+"\n*******\n");
 		return new GuesserAction(todo, currentGuess);
 	}
 
@@ -57,9 +57,9 @@ public class MastermindGuesser extends Guesser {
 			for (List<Integer> j : rules.keySet())
 				if( j.contains(i))
 					count++;
-			int size = possibilities.get(i).size();
-			if ((size == 0 || size > 1 || count < 2))// nothing seen, might want to add!
-				toReturn.add(i);
+					int size = possibilities.get(i).size();
+					if ((size == 0 || size > 1 || count < 2))// nothing seen, might want to add!
+						toReturn.add(i);
 		}
 		while (toReturn.size() > 1 && rules.get(toReturn) != null)
 			toReturn.remove((int) (toReturn.size() * Math.random()));
@@ -104,24 +104,165 @@ public class MastermindGuesser extends Guesser {
 		return randomList;
 	}
 
-	// TODO(riddhi)
+	/**
+	 *   updateRules updates rules recursively
+	 *         By creating a new rule considering intersection with previous rules
+	 *          
+	 *  
+	 *  @param domainSet
+	 *                   query of the rule
+	 *  @param  rangeSet                 
+	 *                    result of the query
+	 */
+	public void updateRules (ArrayList<Integer> domainSet,ArrayList<Integer> rangeSet) {
+		Collections.sort(domainSet);
+		Collections.sort(rangeSet);
+		if(rules.size()==0) {
+			if(domainSet.size()>0 && rangeSet.size()>0) {
+				if(! ( rules.containsKey(domainSet) && rules.get(domainSet).equals(rangeSet) ) ) {
+					rules.put(domainSet, rangeSet);
+					updatePossibilities(domainSet, rangeSet);
+				}
+			}
+		} else {
+			if(! ( rules.containsKey(domainSet) && rules.get(domainSet).equals(rangeSet) ) ) {
+				if(domainSet.size()>0 && rangeSet.size()>0) {
+					rules.put(domainSet, rangeSet);
+					updatePossibilities(domainSet, rangeSet);
+				}
+			}
+			// currently only adding rule, though in some cases some rules can be removed, whose partitioning is exhibited 
+			// by the already present rules.
+			Map<List<Integer>, List<Integer>> rulesToBeAdded=new HashMap<List<Integer>,List<Integer>>();
+			for (Map.Entry<List<Integer>,List<Integer>> singleRule : rules.entrySet()) {
+				ArrayList<Integer> domainList = (ArrayList<Integer>)singleRule.getKey();
+				ArrayList<Integer> rangeList = (ArrayList<Integer>)singleRule.getValue();
+
+				ArrayList<Integer> domainIntersection =new ArrayList<Integer>();
+				domainIntersection.addAll(domainSet);  domainIntersection.retainAll(domainList);
+				ArrayList<Integer> rangeIntersection =new ArrayList<Integer>();
+				rangeIntersection.addAll(rangeSet);  rangeIntersection.retainAll(rangeList);
+				// domainIntersection and rangeList is the intersection of the new rule 
+				if (domainIntersection.size()>0 && rangeIntersection.size()>0) {
+					if(! ( 
+							(rules.containsKey(domainIntersection) && rules.get(domainIntersection).equals(rangeIntersection))
+							||
+							(rulesToBeAdded.containsKey(domainIntersection) && rulesToBeAdded.get(domainIntersection).equals(rangeIntersection))
+							) ) {
+						rulesToBeAdded.put(domainIntersection, rangeIntersection);
+					}
+				}
+				if (domainList.size()==rangeList.size() && domainSet.size()==rangeSet.size()
+						&& !(domainList.size() == domainIntersection.size() && domainSet.size() == domainIntersection.size())
+						&& domainIntersection.size()>0
+						) {
+					// this section is for UMI - union minus intersection valid id domain and range have same number of elements
+					ArrayList<Integer> domainUMI =new ArrayList<Integer>();
+					domainUMI.addAll(domainSet);  domainUMI.addAll(domainList);domainUMI.removeAll(domainIntersection);
+					ArrayList<Integer> rangeUMI =new ArrayList<Integer>();
+					rangeUMI.addAll(rangeSet);  rangeUMI.addAll(rangeList);rangeUMI.removeAll(rangeIntersection);
+					// domainUMI and rangeUMI is the new inference wrt new rule 
+					if (domainUMI.size()>0 && rangeUMI.size()>0) {
+						if(! ( 
+								( rules.containsKey(domainUMI) && rules.get(domainUMI).equals(rangeUMI)  ) 
+								||
+								( rulesToBeAdded.containsKey(domainUMI) && rulesToBeAdded.get(domainUMI).equals(rangeUMI)  )
+								)) {
+							rulesToBeAdded.put(domainUMI, rangeUMI);
+						}
+					}
+				}
+			}//end of rules loop
+			if (rulesToBeAdded.size()>=1){
+				for (Map.Entry<List<Integer>,List<Integer>> singleRule : rulesToBeAdded.entrySet()) {
+					List<Integer> domainList = singleRule.getKey();
+					List<Integer> rangeList = singleRule.getValue();
+					if( !(rules.containsKey(domainList) && rules.get(domainList).equals(rangeList) ) ) {
+						Collections.sort(domainList);
+						Collections.sort(rangeList);
+						rules.put(domainList,rangeList);
+						updatePossibilities(domainList, rangeList);
+
+					}
+				}
+
+			}
+
+		}
+
+	}
+
+
 	/**
 	 * Update the rules for this game based on possibilities
 	 */
-	public void updateRules() {
+	public void updateRulesFromPossibilities(){
+		// using possibilities
+		// update rules where possibilities are only 1
+		if(rules.size()==0)
+			return;
+		for(Map.Entry<Integer,List<Integer>> domainValidPossibility :possibilities.entrySet() ){
+			Integer domainElementP=domainValidPossibility.getKey();
+			List<Integer> rangeListP=domainValidPossibility.getValue();
+			if(rangeListP.size() == 1){
+				Map<List<Integer>, List<Integer>> rulesToBeAdded=new HashMap<List<Integer>,List<Integer>>();
+				for (Map.Entry<List<Integer>,List<Integer>> singleRule : rules.entrySet()) {
+					List<Integer> domainList = new ArrayList<Integer>(singleRule.getKey());
+					List<Integer> rangeList = new ArrayList<Integer>(singleRule.getValue());
+					if (rangeList.size()<=1)
+						continue;
+					for(Integer domainElementR : domainList ) {
+						if (domainElementR == domainElementP  && domainList.size() == rangeList.size()){
+							rangeList.remove(rangeListP.get(0));
+							domainList.remove(domainElementR);
+							if(domainList.size()>=1 && !rules.containsKey(domainList)) {
+								rulesToBeAdded.put(domainList, rangeList);
+								// rules.put(domainList,rangeList);
+								updatePossibilities(domainList,rangeList);
+								// as it is a new rule it might be a good idea to call updatePossibilities
+							}
+							break; 
+							// to move to the next rule
+						}
+					}
+				}//end of rules loop
+				if (rulesToBeAdded.size()>=1){
+					for (Map.Entry<List<Integer>,List<Integer>> singleRule : rulesToBeAdded.entrySet()) {
+						List<Integer> domainList = singleRule.getKey();
+						List<Integer> rangeList = singleRule.getValue();
+						if(domainList.size()==0 || rangeList.size()==0)
+							continue;
+						if( !(rules.containsKey(domainList) && rules.get(domainList).equals(rangeList) ) ) {
+							Collections.sort(domainList);
+							Collections.sort(rangeList);
+							rules.put(domainList,rangeList);
+							//	updateQueryHistory((ArrayList<Integer>)domainList);
+							updatePossibilities(domainList, rangeList);
+						}
+
+					}
+				}
+
+
+			}// end of if size is 1
+		}//end of parsing over possibilities
+	}//end of updateRulesFromPossibilities
+
+
+	public void __updateRulesFromPossibilities() {
 		for (Integer i : possibilities.keySet())
 			if (possibilities.get(i).size() == 1)
 				for (List<Integer> guess : rules.keySet())
 					if (guess.contains(i) && rules.get(guess) != null
-							&& guess.size() > 1) {
+					&& guess.size() > 1) {
 						if (guess.size() == rules.get(guess).size())
 							rules.get(guess)
-									.remove(possibilities.get(i).get(0));
+							.remove(possibilities.get(i).get(0));
 						guess.remove(i);
 					}
 	}
 
-	public void _updateRules() {
+	public void _updateRulesFromPossibilities() {
 		// using possibilities // update rules where possibilities are only 1
 		System.out.println("rules changed");
 		for (int i = 1; i <= possibilities.size(); i++) {
@@ -167,6 +308,21 @@ public class MastermindGuesser extends Guesser {
 		}
 	}
 
+	/*
+	 *  To print the current state of rules table
+	 *  (supporting method)
+	 */
+	public void printCurrentRules(String message) {
+		System.out.println("\n\tRules Table  "+message);
+		for (Map.Entry<List<Integer>,List<Integer>> singleRule : rules.entrySet()) {
+			List<Integer> domainList = singleRule.getKey();
+			List<Integer> rangeList = singleRule.getValue();
+			if(domainList.size()>=1)
+				System.out.println("\t"+domainList+"  --> "+rangeList);
+		}
+		System.out.println("\tRules END  \n");
+	}
+
 	// TODO(akivab)
 	/**
 	 * Returns the final guess (if a solution has been reached)
@@ -198,8 +354,14 @@ public class MastermindGuesser extends Guesser {
 	 */
 	@Override
 	public void setResult(ArrayList<Integer> alResult) {
-		rules.put(currentGuess, alResult);
+		System.out.println("\t###########\n\t"+currentGuess+" ->> "+alResult+"\n\t###########");
+		updateRules(currentGuess,alResult);
+		//rules.put(currentGuess, alResult);
+
 		updatePossibilities(currentGuess, alResult);
-		updateRules();
+		updateRulesFromPossibilities();
+		printCurrentRules("After");
+
+
 	}
 }

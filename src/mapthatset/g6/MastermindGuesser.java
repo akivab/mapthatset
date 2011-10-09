@@ -269,12 +269,13 @@ public class MastermindGuesser extends Guesser {
 						continue;
 					for(Integer domainElementR : ruleDomain ) {
 						if (domainElementR == domainElementP  && ruleDomain.size() == ruleRange.size()){
-							/* example -> if ([1,2,3]->[3,4]) is a rule
+							/* example -> if ([1,2,3]->[3,4]) is a rule 
 							 *          and from possibilities we have [2]->[3]
 							 *          then we can NOT say that ([1,3]->[4]) as  ruleDomain.size() != ruleRange.size()
 							 *          
 							 *          But if it was ([1,2,3]->[3,4,9]) and Possibilities say [2]->[3]
 							 *          then we can infer that ([1,3]->[4,9]) 
+							 * 
 							 * 
 							 */
 							ruleRange.remove(rangeListP.get(0));

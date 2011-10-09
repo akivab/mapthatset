@@ -211,6 +211,7 @@ public class DumbGuesser extends Guesser {
 
 	/*
 	 *  This method will update the queryHistory
+	 *  
 	 *   the Idea is that if we are having rules like -
 	 *   ([1,2,3]->[2,4]) and ([3,9]->2,8]) then
 	 *   we should not query for [1,2,3,9] as it will give no additional information 

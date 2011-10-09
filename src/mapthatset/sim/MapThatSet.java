@@ -148,7 +148,7 @@ public class MapThatSet
 				System.out.println( "The scores between " + gsrCurrent.getID() + " and " + mprCurrent.getID() + " are:" );
 				for ( Mapping mpnMapping : alMappings )
 				{
-					System.out.print( mpnMapping.getMapping() + " : " + mpnMapping.getScore() + "\t" );
+					System.out.print( mpnMapping.getMapping() + " : " + mpnMapping.getScore() + "\n" );
 				}
 			}
 		}	

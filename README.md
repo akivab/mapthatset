@@ -6,6 +6,7 @@ Hans, Riddhi, Akiva, Najaf
 
 10/4/11
 -------
+```
 mapper: [1, 3, 3, 4, 1]
 [1, 3, 4] -> [1,  3,4]
 
@@ -25,7 +26,7 @@ Update rules
 2 -> [3]
 3 -> [3]
 4 -> [1, 4]
-
+```
 
 Maintain a set of rules (Map<Set<Integer>,Set<Integer>>)  
 Maintain a set of possibilities (Map<Integer, Set<Integer>>)

@@ -6,6 +6,7 @@ Hans, Riddhi, Akiva, Najaf
 
 10/4/11
 -------
+```
 mapper: [1, 3, 3, 4, 1]
 [1, 3, 4] -> [1,  3,4]
 
@@ -25,25 +26,28 @@ Update rules
 2 -> [3]
 3 -> [3]
 4 -> [1, 4]
+```
 
-
-Maintain a set of rules (Map<Set<Integer>,Set<Integer>>)
+Maintain a set of rules (Map<Set<Integer>,Set<Integer>>)  
 Maintain a set of possibilities (Map<Integer, Set<Integer>>)
 
-Variables:
-Rules = Map<Set<Integer>, Set<Integer>>
-Possibilities = Map<Integer, Set<Integer>>
+Variables:  
 
-Methods:
-Create guess (making a random guess, with some random # of possibilities from those keys where we do not yet know the value)
-Update possibilities (removing elements from possibilities as seen by new guess)
-Update rules <- (going through rules, removing element from sets if key->value found and equal # in key->value)
-Check if solution reached <- trivial (going through the map, checking that each element maps to 1 thing)
+* Rules = Map<Set<Integer>, Set<Integer>>
+* Possibilities = Map<Integer, Set<Integer>>
+
+Methods:  
+
+* Create guess (making a random guess, with some random # of possibilities from those keys where we do not yet know the value)
+* Update possibilities (removing elements from possibilities as seen by new guess)
+* Update rules <- (going through rules, removing element from sets if key->value found and equal # in key->value)
+* Check if solution reached <- trivial (going through the map, checking that each element maps to 1 thing)
 
 10/6/11
 -------
 
-Things to improve with guesser:
+**Things to improve with guesser:**
+
 * Craft better guesses
   - Work with disjoint sets
   - Then resolve
@@ -70,6 +74,8 @@ Things to work on with the mapper:
   - Maintain some history
   - Make sure not to pick too of the same random number
   
-  List<Integer> history
-  for(Integer i : possibilities.keySet())
-    history.put(random) <-- random didn't appear too many times
+    ```java
+    List<Integer> history  
+    for(Integer i : possibilities.keySet())  
+        history.put(random) // random didn't appear too many times
+    ```

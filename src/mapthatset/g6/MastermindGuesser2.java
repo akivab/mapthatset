@@ -77,7 +77,7 @@ public class MastermindGuesser2 extends Guesser {
 		else{
 			int p1 = -1, p2 = -1;
 			for(Integer i : possibilities.keySet())
-				if(possibilities.get(i).size() != 1){
+				if(finalGuess.get(i) == -1){
 					if(p1 < 0)
 						p1 = i;
 					else if(p2 < 0){
@@ -200,7 +200,7 @@ public class MastermindGuesser2 extends Guesser {
 				for(Iterator<Integer> itr = possibilities.get(poss).iterator(); itr.hasNext(); )
 					if(!alResult.contains(itr.next()))
 						itr.remove();
-			if(possibilities.get(poss).size() == 1){
+			if(finalGuess.get(poss) == -1 && possibilities.get(poss).size() == 1){
 				Integer soln = possibilities.get(poss).get(0);
 				//System.out.println("Found another that works! " + poss + " -> " + soln + "\n");
 				finalGuess.put(poss, soln);

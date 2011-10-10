@@ -4,6 +4,7 @@ import mapthatset.sim.Mapper;
 import mapthatset.sim.GuesserAction;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Random;
 
 
@@ -24,19 +25,35 @@ public class MastermindMapper extends Mapper {
   	  length = intMappingLength;
   		
   		mapping = new ArrayList<Integer>(length);
-  		
-  		Random rand = new Random();
-  		
+
   		//TODO: check that we haven't used this mapping before
-  		for(int i = 0; i < length; i++) {
-			  int randomInt = rand.nextInt(length) + 1;
-			  mapping.add(randomInt);
-  		}
+  		for(int i = 0; i < length; i++) mapping.add(i);
+			
+			mapping = shuffle(mapping);
   		
   		mappingHistory.add(mapping);
   		System.out.println("The mapping is:\n"+mapping);
   		return mapping;
   	}
+		
+    /**
+     * An implementation of the Fisher-Yates random shuffle.
+     */
+    private ArrayList<Integer> shuffle(ArrayList<Integer> mapping) {
+    	ArrayList<Integer> shuffled = new ArrayList<Integer>(mapping.size());
+    	for(Integer i : mapping) shuffled.add(i.clone());
+    	
+    	Random rand = new Random();
+    	for(int i = 0; i < mapping.length(); i++) {
+    		int randomInt = rand.nextInt(length) + 1;
+    		if(randomInt != i) {
+    			Integer temp = shuffled.get(i);
+    			shuffled.set(i, shuffled.get(randomInt));
+    			shuffled.set(randomInt, temp);
+    		}
+    	}
+    	return shuffled;
+    }
   	
   	@Override
   	public void updateGuesserAction(GuesserAction gsaGA) {

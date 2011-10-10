@@ -41,10 +41,10 @@ public class MastermindMapper extends Mapper {
      */
     private ArrayList<Integer> shuffle(ArrayList<Integer> mapping) {
     	ArrayList<Integer> shuffled = new ArrayList<Integer>(mapping.size());
-    	for(Integer i : mapping) shuffled.add(i.clone());
+    	for(Integer i : mapping) shuffled.add(i);
     	
     	Random rand = new Random();
-    	for(int i = 0; i < mapping.length(); i++) {
+    	for(int i = 0; i < mapping.size(); i++) {
     		int randomInt = rand.nextInt(length) + 1;
     		if(randomInt != i) {
     			Integer temp = shuffled.get(i);

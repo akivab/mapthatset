@@ -1,1 +1,1 @@
-mapthatset.g6.MastermindGuesser
+mapthatset.g6.MastermindGuesser2

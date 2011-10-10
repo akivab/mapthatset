@@ -163,23 +163,34 @@ public class MastermindGuesser2 extends Guesser {
 					int f2 = finalGuess.get(r2);
 					int p0 = rules.get(rule).get(0);
 					int p1 = rules.get(rule).get(1);
-					if (f1 != -1 && f2 == -1)
+					if (f1 != -1 && f2 == -1){
 						finalGuess.put(r2, p0 == f1 ? p1 : p0);
-					else if (f1 == -1 && f2 != -1)
+						print(r2, finalGuess.get(r2));
+					}
+					else if (f1 == -1 && f2 != -1){
 						finalGuess.put(r1, p0 == f2 ? p1 : p0);
+						print(r1, finalGuess.get(r1));
+					}
 					else
 						count--;
 					count++;
 				}
 		}
 	}
+	
+	public void print(int i, int j){
+		if(j!=0)
+			System.out.println(i+"->"+j);
+	}
 
 	@Override
 	public void setResult(ArrayList<Integer> alResult) {
 		// any new information will come from alResult
 		if(alResult.size() == 1)
-			for(Integer i : currentGuess)
+			for(Integer i : currentGuess){
 				finalGuess.put(i, alResult.get(0));
+				print(i, alResult.get(0));
+			}
 		
 		// try to limit information about other guesses		
 		for(Integer poss : currentGuess){
@@ -193,6 +204,7 @@ public class MastermindGuesser2 extends Guesser {
 				Integer soln = possibilities.get(poss).get(0);
 				//System.out.println("Found another that works! " + poss + " -> " + soln + "\n");
 				finalGuess.put(poss, soln);
+				print(poss, soln);
 			}
 		}
 		rules.put(currentGuess, alResult);

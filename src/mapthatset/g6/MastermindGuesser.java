@@ -19,6 +19,7 @@ public class MastermindGuesser extends Guesser {
 	Map<List<Integer>, List<Integer>> rules;
 
 	int mapLength;
+	int count;
 	ArrayList<Integer> currentGuess;
 	String strID = "Mastermind";
 	/*
@@ -34,7 +35,7 @@ public class MastermindGuesser extends Guesser {
 	public void startNewMapping(int mapLength) {
 		this.mapLength = mapLength;
 		queryHistory=new HashSet <ArrayList<Integer>>();
-
+		count = 0;
 		possibilities = new HashMap<Integer, List<Integer>>();
 		for (int i = 1; i <= mapLength; i++) {
 			possibilities.put(i, new ArrayList<Integer>());
@@ -86,21 +87,7 @@ public class MastermindGuesser extends Guesser {
 	 * to setResult.
 	 */
 	public ArrayList<Integer> createGuess() {
-
-		ArrayList<Integer> randomList = new ArrayList<Integer>();
-		/*
-		 * The loop below should be present 
-		 * to avoid making a redundant guess 
-		 * 
-		 */
-		
-		while(queryHistory.contains(randomList) || randomList.size()==0 ) {
-			randomList = returnRandomNumbers(mapLength, 1);
-			int numOfDomainElements = randomList.get(0);
-			randomList=returnRandomNumbers(mapLength, numOfDomainElements);
-		}
-		updateQueryHistory((ArrayList<Integer>)randomList);
-		return randomList;
+		return returnRandomNumbers(2, mapLength);
 	}
 
 	/*

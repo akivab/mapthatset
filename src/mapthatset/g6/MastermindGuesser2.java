@@ -211,4 +211,33 @@ public class MastermindGuesser2 extends Guesser {
 		//System.out.println(possibilities);
 		setupPossibilities();
 	}
+	
+	/**
+	 * Given a random permutation, returns the (log n) queries that will solve it.
+	 * @param list The permutation
+	 * @return The queries which will solve the permutation.
+	 */
+	public ArrayList<ArrayList<Integer>> solvePermutation(ArrayList<Integer> list) {
+		ArrayList<ArrayList<Integer>> perm_solution_queries = new ArrayList<ArrayList<Integer>>();
+		
+		int n = list.size();
+		for(int k = 1; n / (Math.pow(2, k)) > 1; k++) {
+			ArrayList<Integer> partitions = new ArrayList<Integer>();
+			
+			int jump = (int) (n/Math.pow(2, k));
+			for(int j = 0; j < n; j += jump) {
+				partitions.add(j);
+			}
+			
+			ArrayList<Integer> constructed_query = new ArrayList<Integer>(n/2);
+			for(int p = 1; p < partitions.size(); p += 2) {
+				constructed_query.addAll(list.subList(partitions.get(p-1), partitions.get(p)));
+			}
+			
+			perm_solution_queries.add(constructed_query);
+		}
+		
+		return perm_solution_queries;
+	}
+	
 }

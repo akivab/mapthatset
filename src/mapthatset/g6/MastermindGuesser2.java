@@ -130,7 +130,7 @@ public class MastermindGuesser2 extends Guesser {
 		return strID;
 	}
 
-	public ArrayList<Integer> getRandomIndex(int n) {
+	public static ArrayList<Integer> getRandomIndex(int n) {
 		ArrayList<Integer> start = new ArrayList<Integer>();
 		ArrayList<Integer> end = new ArrayList<Integer>();
 		Random r = new Random();

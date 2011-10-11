@@ -40,19 +40,9 @@ public class MastermindMapper extends Mapper {
      * An implementation of the Fisher-Yates random shuffle.
      */
     private ArrayList<Integer> shuffle(ArrayList<Integer> mapping) {
-    	ArrayList<Integer> shuffled = new ArrayList<Integer>(mapping.size());
-    	for(Integer i : mapping) shuffled.add(i);
-    	
-    	Random rand = new Random();
-    	for(int i = 0; i < mapping.size(); i++) {
-    		int randomInt = rand.nextInt(length) + 1;
-    		if(randomInt != i) {
-    			Integer temp = shuffled.get(i);
-    			shuffled.set(i, shuffled.get(randomInt));
-    			shuffled.set(randomInt, temp);
-    		}
-    	}
-    	return shuffled;
+    	//ArrayList<Integer> shuffled = new ArrayList<Integer>(mapping.size());
+    	ArrayList<Integer> randInd = MastermindGuesser2.getRandomIndex(mapping.size());
+    	return randInd;
     }
   	
   	@Override

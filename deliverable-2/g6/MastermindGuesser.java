@@ -10,7 +10,7 @@ import java.util.Random;
 import mapthatset.sim.Guesser;
 import mapthatset.sim.GuesserAction;
 
-public class MastermindGuesser2 extends Guesser {
+public class MastermindGuesser extends Guesser {
 	Map<Integer, List<Integer>> possibilities;
 	Map<List<Integer>, List<Integer>> rules;
 	

@@ -15,11 +15,11 @@ public class MastermindGuesser2 extends Guesser {
 	Map<List<Integer>, List<Integer>> rules;
 	
 	int mapLength;
-	int count;
 	
-	Map<Integer, Integer> finalGuess;
 	ArrayList<Integer> currentGuess;
 	ArrayList<Integer> randIndex;
+	ArrayList<ArrayList<Integer>> leftTodo;
+	ArrayList<Integer> leftToExplore;
 	String strID = "Mastermind";
 
 	/**
@@ -29,14 +29,21 @@ public class MastermindGuesser2 extends Guesser {
 	public void startNewMapping(int mapLength) {
 		this.mapLength = mapLength;
 		this.randIndex = getRandomIndex(mapLength);
-		this.finalGuess = new HashMap<Integer, Integer>();
-		this.count = 0;
+		
+		leftToExplore = new ArrayList<Integer>();
+		for(int i = 1 ; i <= mapLength; i++)
+			leftToExplore.add(i);
+	
 		possibilities = new HashMap<Integer, List<Integer>>();
-		for (int i = 1; i <= mapLength; i++) {
-			possibilities.put(i, new ArrayList<Integer>());
-			finalGuess.put(i, -1);
-		}
+		for (int i = 1; i <= mapLength; i++)
+			possibilities.put(i, (ArrayList<Integer>) leftToExplore.clone());
+		
 		rules = new HashMap<List<Integer>, List<Integer>>();
+		
+		leftTodo = new ArrayList<ArrayList<Integer>>();
+		
+		leftTodo.add((ArrayList<Integer>) leftToExplore.clone());
+		
 		currentGuess = null;
 	}
 
@@ -47,14 +54,21 @@ public class MastermindGuesser2 extends Guesser {
 	public GuesserAction nextAction() {
 		String todo = "q";
 		if (!solutionReached()) {
-			currentGuess = (ArrayList<Integer>) makeQuery();
-		} else {
+			if(!leftTodo.isEmpty()){
+				currentGuess = (leftTodo.remove(0));
+				while(!isNewRule(currentGuess) && !leftTodo.isEmpty())
+					currentGuess = (leftTodo.remove(0));
+			}
+			else
+				System.exit(1);
+		}
+		else {
 			todo = "g";
 			currentGuess = (ArrayList<Integer>) makeGuess();
 		}
-		count+=2;
-		////System.out.println();
-		//System.out.println(todo + ": " + currentGuess);
+		
+		System.out.println();
+
 		return new GuesserAction(todo, currentGuess);
 	}
 	
@@ -62,51 +76,80 @@ public class MastermindGuesser2 extends Guesser {
 		MastermindGuesser2 mmg2 = new MastermindGuesser2();
 		mmg2.testSolutionReached();
 		mmg2.testGetRandomIndex();
+		mmg2.testLimitPossibilities1();
+		mmg2.testLimitPossibilities2();
+
 		//System.out.println("Helper methods work.");
 	}
 
-	public ArrayList<Integer> makeQuery() {
-		System.out.println();
-		ArrayList<Integer> toReturn = new ArrayList<Integer>();
-		if(count+1 < mapLength){
-			////System.out.println(randIndex + "\t" + count);
-			toReturn.add(randIndex.get(count));
-			toReturn.add(randIndex.get(count+1));
-			return toReturn;
+	public ArrayList<ArrayList<Integer>> trySplitting(List<Integer> toChooseFrom) {
+		ArrayList<Integer> t1 = new ArrayList<Integer>();
+		ArrayList<Integer> t2 = new ArrayList<Integer>();
+		for(int i = 0; i < toChooseFrom.size(); i++)
+			if(possibilities.get(toChooseFrom.get(i)).size()!=1)
+				if(i < toChooseFrom.size()/2)
+					t1.add(toChooseFrom.get(i));
+				else
+					t2.add(toChooseFrom.get(i));
+		ArrayList<ArrayList<Integer>> toReturn = new ArrayList<ArrayList<Integer>>();
+		toReturn.add(t1);
+		toReturn.add(t2);
+		return toReturn;
+	}
+	
+	public boolean isNewRule(ArrayList<Integer> obj){
+		boolean b = false;
+		for(List<Integer> rule : rules.keySet())
+			b |= obj.containsAll(rule);
+		return !b;
+	}
+	
+	public boolean isNewRule(List<Integer> chooseFrom, int i, int j){
+		return isNewRule(getArr(chooseFrom, i, j));
+	}
+	
+	public ArrayList<Integer> getArr(List<Integer> chooseFrom, int i, int j){
+		ArrayList<Integer> t = new ArrayList<Integer>();
+		t.add(chooseFrom.get(i));
+		t.add(chooseFrom.get(j));
+		return t;
+	}
+	
+	
+	public ArrayList<ArrayList<Integer>> xiansAlgo(List<Integer> toChooseFrom){
+		int j = 0;
+		int n = toChooseFrom.size();
+		int k = 0;
+		ArrayList<ArrayList<Integer>> toReturn = new ArrayList<ArrayList<Integer>>();
+		while(k<n){
+			while(j < n && possibilities.get(toChooseFrom.get(j)).size() == 1) j++;
+			k = j+1;
+			while(k < n && (possibilities.get(toChooseFrom.get(j)).size()==1 || !isNewRule(toChooseFrom, j, k))) k++;
+			if(k<n) toReturn.add(getArr(toChooseFrom,j,k));
+			else if(j < n){
+				ArrayList<Integer> t = new ArrayList<Integer>();
+				t.add(j);
+				toReturn.add(t);
+			}
+			j = k+1;
 		}
-		else{
-			int p1 = -1, p2 = -1;
-			for(Integer i : possibilities.keySet())
-				if(finalGuess.get(i) == -1){
-					if(p1 < 0)
-						p1 = i;
-					else if(p2 < 0){
-						boolean seen = false;
-						for(List<Integer> l : rules.keySet())
-							if(l.contains(p1) && l.contains(i))
-								seen = true;
-						if(!seen)
-							p2 = i;
-					}
-				}
-			if(p1 > 0) toReturn.add(p1);
-			if(p2 > 0) toReturn.add(p2);
-			return toReturn;
-		}
+		return toReturn;
 	}
 	
 
 	public ArrayList<Integer> makeGuess() {
 		ArrayList<Integer> toReturn = new ArrayList<Integer>();
-		for(int i = 1; i <= mapLength; i++)
-			toReturn.add(finalGuess.get(i));
+		for(Integer i : possibilities.keySet())
+			toReturn.add(0);
+		for(Integer i : possibilities.keySet())
+			toReturn.set(i-1,possibilities.get(i).get(0));
 		return toReturn;
 	}
 	
 	public boolean solutionReached(Map<Integer, List<Integer>> possibilities){
 		boolean toReturn = true;
-		for(Integer i : finalGuess.keySet())
-			toReturn &= finalGuess.get(i)!=-1;
+		for(Integer i : possibilities.keySet())
+			toReturn &= possibilities.get(i).size()==1;
 		return toReturn;
 	}
 	
@@ -149,95 +192,116 @@ public class MastermindGuesser2 extends Guesser {
 		for(int i = 1; i <= n; i++)
 			assert r.contains(i);
 	}
-	
-	public void setupPossibilities(){
-		
-		int count = -1;
-		while (count != 0) {
-			count = 0;
-			for (List<Integer> rule : rules.keySet())
-				if (rules.get(rule).size() == 2) {
-					int r1 = rule.get(0);
-					int r2 = rule.get(1);
-					int f1 = finalGuess.get(r1);
-					int f2 = finalGuess.get(r2);
-					int p0 = rules.get(rule).get(0);
-					int p1 = rules.get(rule).get(1);
-					if (f1 != -1 && f2 == -1){
-						finalGuess.put(r2, p0 == f1 ? p1 : p0);
-						print(r2, finalGuess.get(r2));
-					}
-					else if (f1 == -1 && f2 != -1){
-						finalGuess.put(r1, p0 == f2 ? p1 : p0);
-						print(r1, finalGuess.get(r1));
-					}
-					else
-						count--;
-					count++;
-				}
-		}
-	}
-	
-	public void print(int i, int j){
-		if(j!=0)
-			System.out.println(i+"->"+j);
-	}
 
 	@Override
 	public void setResult(ArrayList<Integer> alResult) {
-		// any new information will come from alResult
-		if(alResult.size() == 1)
-			for(Integer i : currentGuess){
-				finalGuess.put(i, alResult.get(0));
-				print(i, alResult.get(0));
-			}
+		rules.put((List<Integer>) currentGuess.clone(), (List<Integer>) alResult.clone());
+	//	System.out.println(possibilities);
+
+		limitPossibilities(rules, possibilities);
+		if(solutionReached()){ leftTodo.removeAll(leftTodo); return; }
 		
-		// try to limit information about other guesses		
-		for(Integer poss : currentGuess){
-			if(possibilities.get(poss).size() == 0)
-				possibilities.get(poss).addAll(alResult);
-			else
-				for(Iterator<Integer> itr = possibilities.get(poss).iterator(); itr.hasNext(); )
-					if(!alResult.contains(itr.next()))
-						itr.remove();
-			if(finalGuess.get(poss) == -1 && possibilities.get(poss).size() == 1){
-				Integer soln = possibilities.get(poss).get(0);
-				//System.out.println("Found another that works! " + poss + " -> " + soln + "\n");
-				finalGuess.put(poss, soln);
-				print(poss, soln);
+		if(currentGuess.size() == alResult.size()){
+			ArrayList<ArrayList<Integer>> perms = solvePermutation(currentGuess);
+			if(leftToExplore.containsAll(currentGuess)){
+				leftTodo.addAll(perms);
+				leftToExplore.removeAll(currentGuess);
 			}
 		}
-		rules.put(currentGuess, alResult);
-		//System.out.println(possibilities);
-		setupPossibilities();
+		else{
+			leftTodo.addAll(xiansAlgo(leftToExplore));
+		}
 	}
 	
+	public void limitPossibilities(Map<List<Integer>, List<Integer>> mapping, Map<Integer, List<Integer>> poss){
+		for(List<Integer> r1 : mapping.keySet())
+			for(List<Integer> r2 : mapping.keySet())
+				if(!r1.equals(r2)){
+					List<Integer> g1 = new ArrayList<Integer>();
+					List<Integer> g2 = new ArrayList<Integer>();
+					g1.addAll(r1);
+					g1.retainAll(r2);
+					g2.addAll(mapping.get(r1));
+					g2.retainAll(mapping.get(r2));
+
+					if(g1.size()!= 0 && r1.size() - g1.size() == mapping.get(r1).size() - g2.size())
+						for(Integer choice : r1){
+							poss.get(choice).retainAll(mapping.get(r1));
+							if(g1.contains(choice))
+								poss.get(choice).retainAll(g2);
+							else
+								poss.get(choice).removeAll(g2);
+						}
+				}
+	}
+	
+	public void testLimitPossibilities1(){
+		HashMap<List<Integer>, List<Integer>> mapping = new HashMap<List<Integer>, List<Integer>>();
+		HashMap<Integer, List<Integer>> poss  = new HashMap<Integer, List<Integer>>();
+		ArrayList<Integer> tmp = new ArrayList<Integer>();
+		for(int i = 1 ; i <= 5; i++){
+			tmp.add(i);
+			if( i < 5 ){
+				ArrayList<Integer> t1 = new ArrayList<Integer>();
+				ArrayList<Integer> t2 = new ArrayList<Integer>();
+				t1.add(i);
+				t1.add(i+1);
+				t2.addAll(t1);
+				mapping.put(t1,t2);
+			}
+		}
+		for(Integer i : tmp)
+			poss.put(i, (List<Integer>) tmp.clone());
+		limitPossibilities(mapping, poss);
+		
+		for(Integer i : poss.keySet()){
+			assert(poss.get(i).size()==1);
+			assert(i == poss.get(i).get(0));
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void testLimitPossibilities2(){
+		HashMap<List<Integer>, List<Integer>> mapping = new HashMap<List<Integer>, List<Integer>>();
+		HashMap<Integer, List<Integer>> poss  = new HashMap<Integer, List<Integer>>();
+		ArrayList<Integer> tmp = new ArrayList<Integer>();
+		for(int i = 1; i<=200; i++)
+			tmp.add(i);
+		for(Integer i : tmp)
+			poss.put(i,  (List<Integer>) tmp.clone());
+		mapping.put((List<Integer>)tmp.clone(), (List<Integer>)tmp.clone());
+		ArrayList<ArrayList<Integer>> perms = solvePermutation(tmp);
+		//System.out.println(perms);
+		for(ArrayList<Integer> perm : perms)
+			mapping.put((List<Integer>) perm.clone(), (List<Integer>) perm.clone());
+		limitPossibilities(mapping, poss);
+		System.out.println(mapping.keySet().size() + " for " + tmp.size() + " elements");
+		for(Integer i : poss.keySet()){
+			assert(poss.get(i).size()==1);
+			assert(i == poss.get(i).get(0));
+		}
+	}
+
 	/**
 	 * Given a random permutation, returns the (log n) queries that will solve it.
 	 * @param list The permutation
 	 * @return The queries which will solve the permutation.
 	 */
 	public ArrayList<ArrayList<Integer>> solvePermutation(ArrayList<Integer> list) {
-		ArrayList<ArrayList<Integer>> perm_solution_queries = new ArrayList<ArrayList<Integer>>();
+		ArrayList<ArrayList<Integer>> toReturn = new ArrayList<ArrayList<Integer>>();
 		
 		int n = list.size();
-		for(int k = 1; n / (Math.pow(2, k)) > 1; k++) {
+		for(int k = 1; k <= n; k*=2){
 			ArrayList<Integer> partitions = new ArrayList<Integer>();
-			
-			int jump = (int) (n/Math.pow(2, k));
-			for(int j = 0; j < n; j += jump) {
-				partitions.add(j);
+			int j = 0;
+			while(j < n){
+				for(int i = 0; i < k && j < n; i++)
+					partitions.add(list.get(j++));
+				j+=k;
 			}
-			
-			ArrayList<Integer> constructed_query = new ArrayList<Integer>(n/2);
-			for(int p = 1; p < partitions.size(); p += 2) {
-				constructed_query.addAll(list.subList(partitions.get(p-1), partitions.get(p)));
-			}
-			
-			perm_solution_queries.add(constructed_query);
+			if(partitions.size() != n)
+				toReturn.add((ArrayList<Integer>) partitions.clone());
 		}
-		
-		return perm_solution_queries;
+		return toReturn;
 	}
-	
 }

@@ -116,7 +116,7 @@ public class MastermindGuesser2 extends Guesser {
 	}
 	
 	
-	public ArrayList<ArrayList<Integer>> xiansAlgo(List<Integer> toChooseFrom){
+	public ArrayList<ArrayList<Integer>> makeSmallGuess(List<Integer> toChooseFrom){
 		int j = 0;
 		int n = toChooseFrom.size();
 		int k = 0;
@@ -199,18 +199,17 @@ public class MastermindGuesser2 extends Guesser {
 	//	System.out.println(possibilities);
 
 		limitPossibilities(rules, possibilities);
-		if(solutionReached()){ leftTodo.removeAll(leftTodo); return; }
 		
-		if(currentGuess.size() == alResult.size()){
+		/*if(currentGuess.size() == alResult.size()){
 			ArrayList<ArrayList<Integer>> perms = solvePermutation(currentGuess);
 			if(leftToExplore.containsAll(currentGuess)){
 				leftTodo.addAll(perms);
 				leftToExplore.removeAll(currentGuess);
 			}
 		}
-		else{
-			leftTodo.addAll(xiansAlgo(leftToExplore));
-		}
+		else{*/
+			leftTodo.addAll(makeSmallGuess(leftToExplore));
+		//}
 	}
 	
 	public void limitPossibilities(Map<List<Integer>, List<Integer>> mapping, Map<Integer, List<Integer>> poss){

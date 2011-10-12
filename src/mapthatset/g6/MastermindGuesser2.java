@@ -124,14 +124,14 @@ public class MastermindGuesser2 extends Guesser {
 		while(k<n){
 			while(j < n && possibilities.get(toChooseFrom.get(j)).size() == 1) j++;
 			k = j+1;
-			while(k < n && (possibilities.get(toChooseFrom.get(j)).size()==1 || !isNewRule(toChooseFrom, j, k))) k++;
+			while(k < n && (possibilities.get(toChooseFrom.get(k)).size()==1 || !isNewRule(toChooseFrom, j, k))) k++;
 			if(k<n) toReturn.add(getArr(toChooseFrom,j,k));
 			else if(j < n){
 				ArrayList<Integer> t = new ArrayList<Integer>();
 				t.add(j);
 				toReturn.add(t);
 			}
-			j = k+1;
+			j=k+1;
 		}
 		return toReturn;
 	}
@@ -200,16 +200,16 @@ public class MastermindGuesser2 extends Guesser {
 
 		limitPossibilities(rules, possibilities);
 		
-		if(currentGuess.size() == alResult.size()){
+/*		if(currentGuess.size() == alResult.size()){
 			ArrayList<ArrayList<Integer>> perms = solvePermutation(currentGuess);
 			if(leftToExplore.containsAll(currentGuess)){
 				leftTodo.addAll(perms);
 				leftToExplore.removeAll(currentGuess);
 			}
 		}
-		else{
+		else{*/
 			leftTodo.addAll(makeSmallGuess(leftToExplore));
-		}
+//		}
 	}
 	
 	public void limitPossibilities(Map<List<Integer>, List<Integer>> mapping, Map<Integer, List<Integer>> poss){

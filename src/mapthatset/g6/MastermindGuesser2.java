@@ -200,16 +200,16 @@ public class MastermindGuesser2 extends Guesser {
 
 		limitPossibilities(rules, possibilities);
 		
-		/*if(currentGuess.size() == alResult.size()){
+		if(currentGuess.size() == alResult.size()){
 			ArrayList<ArrayList<Integer>> perms = solvePermutation(currentGuess);
 			if(leftToExplore.containsAll(currentGuess)){
 				leftTodo.addAll(perms);
 				leftToExplore.removeAll(currentGuess);
 			}
 		}
-		else{*/
+		else{
 			leftTodo.addAll(makeSmallGuess(leftToExplore));
-		//}
+		}
 	}
 	
 	public void limitPossibilities(Map<List<Integer>, List<Integer>> mapping, Map<Integer, List<Integer>> poss){

@@ -50,7 +50,7 @@ public class Mapping
 		
 		for ( int i = 0; i < alActionContent.size(); i ++ )
 		{
-			if ( alActionContent.get( i ) != alMapping.get( i ) )
+			if ( !alActionContent.get(i).equals(alMapping.get(i)) )
 			{
 //				System.out.println( "Your guess is wrong. The mapping is: " + alMapping );
 				return false;

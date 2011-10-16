@@ -136,13 +136,13 @@ public class MastermindGuesser2 extends Guesser {
 	public ArrayList<ArrayList<Integer>> makeBalancedGuess(List<Integer> toChooseFrom){
 		// currently taking n^0.5 , where n is total size of the toChooseFrom
 		/*
-		 * It is toChooseFrom - elements whose valu is already known
+		 * It is toChooseFrom - elements whose value is already known
 		 */
 		ArrayList<Integer> condensedChoices =new ArrayList<Integer>();
 
 		ArrayList<ArrayList<Integer>> toReturn = new ArrayList<ArrayList<Integer>>();
 		for(Integer i :toChooseFrom)
-			if(possibilities.get(toChooseFrom.get(i)).size() > 1 ) {
+			if(possibilities.get(i).size() > 1 ) {
 				condensedChoices.add(i);
 			}
 		int n = condensedChoices.size();
@@ -267,7 +267,7 @@ public class MastermindGuesser2 extends Guesser {
 			}
 		}
 		else{
-			leftTodo.addAll(makeSmallGuess(leftToExplore));
+			leftTodo.addAll(makeBalancedGuess(leftToExplore));
 			// should ths be commented ? leftToExplore.removeAll(currentGuess);
 		}
 	}

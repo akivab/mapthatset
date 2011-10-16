@@ -61,22 +61,20 @@ public class MastermindGuesser2 extends Guesser {
 	public GuesserAction nextAction() {
 		String todo = "q";
 		if (!solutionReached()) {
-			if (!leftTodo.isEmpty() || !leftToExplore.isEmpty()) {
-				Collection 	<ArrayList<Integer>> leftTodoNoDups=new LinkedHashSet<ArrayList<Integer>>(leftTodo);
-				leftTodo.clear();
-				if(!leftTodoNoDups.isEmpty())
-					leftTodo.addAll(leftTodoNoDups);
-				if(leftTodo.isEmpty() && !leftToExplore.isEmpty()){
-					leftTodo.add(new ArrayList<Integer>(leftToExplore));
-					leftToExplore.clear();
-				}
-				if(!leftTodo.isEmpty()){
+			Collection 	<ArrayList<Integer>> leftTodoNoDups=new LinkedHashSet<ArrayList<Integer>>(leftTodo);
+			leftTodo.clear();
+			if(!leftTodoNoDups.isEmpty())
+				leftTodo.addAll(leftTodoNoDups);
+			if(leftTodo.isEmpty() && !leftToExplore.isEmpty()){
+				leftTodo.add(new ArrayList<Integer>(leftToExplore));
+				//leftToExplore.clear();
+			}
+			if(!leftTodo.isEmpty()){
+				currentGuess = (leftTodo.remove(0));
+				while( (!isNewRule(currentGuess) && !leftTodo.isEmpty() )|| rules.containsKey(currentGuess)) {
+					if (leftTodo.isEmpty())
+						leftTodo.add(new ArrayList<Integer>(leftToExplore));
 					currentGuess = (leftTodo.remove(0));
-					while( (!isNewRule(currentGuess) && !leftTodo.isEmpty() )|| rules.containsKey(currentGuess)) {
-						if (leftTodo.isEmpty())
-							leftTodo.add(new ArrayList<Integer>(leftToExplore));
-						currentGuess = (leftTodo.remove(0));
-					}
 				}
 			}
 			//else
@@ -134,6 +132,45 @@ public class MastermindGuesser2 extends Guesser {
 		return t;
 	}
 
+
+	public ArrayList<ArrayList<Integer>> makeBalancedGuess(List<Integer> toChooseFrom){
+		// currently taking n^0.5 , where n is total size of the toChooseFrom
+		/*
+		 * It is toChooseFrom - elements whose valu is already known
+		 */
+		ArrayList<Integer> condensedChoices =new ArrayList<Integer>();
+
+		ArrayList<ArrayList<Integer>> toReturn = new ArrayList<ArrayList<Integer>>();
+		for(Integer i :toChooseFrom)
+			if(possibilities.get(toChooseFrom.get(i)).size() > 1 ) {
+				condensedChoices.add(i);
+			}
+		int n = condensedChoices.size();
+		int rootN =(int)Math.ceil(Math.sqrt(n));
+		int lowerIndex=0;
+		int upperIndex=0;
+		while(upperIndex<n) {
+			upperIndex+=rootN;
+			ArrayList<Integer> toAdd=new ArrayList<Integer>();
+			toAdd.clear();
+			
+			if(upperIndex>=n)
+				toAdd.addAll(condensedChoices.subList(lowerIndex,n-1));
+			else
+				toAdd.addAll(condensedChoices.subList(lowerIndex, upperIndex));
+			
+			if(!rules.containsKey(toAdd))
+				toReturn.add(toAdd);
+			else {
+            	ArrayList<ArrayList<Integer>> subGuess=new ArrayList<ArrayList<Integer>>(makeBalancedGuess(toAdd));
+            	if(!subGuess.isEmpty())
+			          	toReturn.addAll(subGuess);
+			}
+			lowerIndex+=rootN;
+		}
+		
+		return toReturn;
+	}
 
 	public ArrayList<ArrayList<Integer>> makeSmallGuess(List<Integer> toChooseFrom){
 		int j = 0;

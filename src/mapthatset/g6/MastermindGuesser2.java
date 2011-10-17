@@ -146,16 +146,24 @@ public class MastermindGuesser2 extends Guesser {
 				condensedChoices.add(i);
 			}
 		int n = condensedChoices.size();
+		if(n<=2) {
+			toReturn.add(condensedChoices);
+			return toReturn;
+		}
 		int rootN =(int)Math.ceil(Math.sqrt(n));
 		int lowerIndex=0;
 		int upperIndex=0;
-		while(upperIndex<n) {
+		while(upperIndex<=n) {
 			upperIndex+=rootN;
 			ArrayList<Integer> toAdd=new ArrayList<Integer>();
 			toAdd.clear();
+			if(lowerIndex>=n) {
+				upperIndex+=rootN;
+				continue;
+			}
 			
 			if(upperIndex>=n)
-				toAdd.addAll(condensedChoices.subList(lowerIndex,n-1));
+				toAdd.addAll(condensedChoices.subList(lowerIndex,n));
 			else
 				toAdd.addAll(condensedChoices.subList(lowerIndex, upperIndex));
 			
@@ -268,7 +276,7 @@ public class MastermindGuesser2 extends Guesser {
 		}
 		else{
 			leftTodo.addAll(makeBalancedGuess(leftToExplore));
-			// should ths be commented ? leftToExplore.removeAll(currentGuess);
+			// should this be commented ? leftToExplore.removeAll(currentGuess);
 		}
 	}
 

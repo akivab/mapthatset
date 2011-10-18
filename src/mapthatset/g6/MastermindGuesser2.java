@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeSet;
 
 import mapthatset.sim.Guesser;
 import mapthatset.sim.GuesserAction;
@@ -22,12 +23,20 @@ public class MastermindGuesser2 extends Guesser {
 	int mapLength;
 	boolean debuggingMode=false;
 
+	boolean guessed=false;
+
+	/*
+	 *  This query History will keep a collection of all the queries so that we don't make any redundant queries
+	 *    for example if we have queried for [1,2] and [3] then we should not query [1,2,3]
+	 */
+	Set <ArrayList<Integer>> queryHistory;
 
 	ArrayList<Integer> currentGuess;
 	ArrayList<Integer> randIndex;
 	ArrayList<ArrayList<Integer>> leftTodo;
 	ArrayList<Integer> leftToExplore;
 	String strID = "Mastermind";
+
 
 	/**
 	 * Initializes a new mapping.
@@ -36,6 +45,8 @@ public class MastermindGuesser2 extends Guesser {
 	public void startNewMapping(int mapLength) {
 		this.mapLength = mapLength;
 		this.randIndex = getRandomIndex(mapLength);
+		queryHistory=new HashSet <ArrayList<Integer>>();
+
 
 		leftToExplore = new ArrayList<Integer>();
 		for(int i = 1 ; i <= mapLength; i++)
@@ -59,34 +70,170 @@ public class MastermindGuesser2 extends Guesser {
 	 */
 	@Override
 	public GuesserAction nextAction() {
+
 		String todo = "q";
-		if (!solutionReached()) {
+		if (!solutionReached() ) {
+			printIfDebugging("\n\nAt begin leftTodo="+leftTodo);
+			printIfDebugging("At begin leftToExplore="+leftToExplore);
+
+			cleanLeftToDo();
 			Collection 	<ArrayList<Integer>> leftTodoNoDups=new LinkedHashSet<ArrayList<Integer>>(leftTodo);
-			leftTodo.clear();
-			if(!leftTodoNoDups.isEmpty())
+			if(!leftTodoNoDups.isEmpty()) {
+				leftTodo.clear();
 				leftTodo.addAll(leftTodoNoDups);
+			}
+			//else
+			if(!rules.isEmpty())
+				leftTodo.removeAll(rules.keySet());
+			//printIfDebugging("\n\nAt begin After Rule leftTodo="+leftTodo);
+			if(!queryHistory.isEmpty())
+				leftTodo.removeAll(queryHistory);
+			
+			//printIfDebugging("\n\nAt begin After query  leftTodo="+leftTodo);
+			updateLeftToExplore();
+
 			if(leftTodo.isEmpty() && !leftToExplore.isEmpty()){
 				leftTodo.add(new ArrayList<Integer>(leftToExplore));
+				ArrayList<ArrayList<Integer>> perms = makeBalancedGuess(leftToExplore);
+				if(perms.size()>0 && perms.get(0).size()>0) {
+					leftTodo.addAll(perms);
+				}
+
+				//leftTodo.add(new ArrayList<Integer>(leftToExplore));
 				//leftToExplore.clear();
 			}
+			//			if(leftTodo.size()>2*leftToExplore.size()) {
+			//				leftTodo.clear();
+			//				for(Integer lTe :leftToExplore) {
+			//					ArrayList<Integer> temp =new ArrayList<Integer>();
+			//					temp.add(lTe);
+			//					leftTodo.add(temp);
+			//				}
+			//				printIfDebugging("At exchange leftTodo="+leftTodo);
+			//
+			//			}
+			printIfDebugging("At Mid leftTodo="+leftTodo);
+			printIfDebugging("At Mid leftToExplore="+leftToExplore);
 			if(!leftTodo.isEmpty()){
-				currentGuess = (leftTodo.remove(0));
-				while( (!isNewRule(currentGuess) && !leftTodo.isEmpty() )|| rules.containsKey(currentGuess)) {
-					if (leftTodo.isEmpty())
-						leftTodo.add(new ArrayList<Integer>(leftToExplore));
-					currentGuess = (leftTodo.remove(0));
+				currentGuess = makeAGuess();
+				while( (!leftTodo.isEmpty() ) &&( rules.containsKey(currentGuess) ||queryHistory.contains(currentGuess))) {
+					printIfDebugging("== currentGuess ==="+currentGuess);
+					/*printIfDebugging("\t  !isNewRule(currentGuess)="+!isNewRule(currentGuess)+
+							"  !leftTodo.isEmpty()="+!leftTodo.isEmpty()+"    rules.containsKey(currentGuess)="+
+							rules.containsKey(currentGuess));*/
+					if (leftTodo.isEmpty()) {
+						ArrayList<ArrayList<Integer>> perms = makeBalancedGuess(leftToExplore);
+						if(perms.size()>0 && perms.get(0).size()>0) {
+							leftTodo.addAll(perms);
+						}
+						//printIfDebugging("== At inferno adding="+leftToExplore);
+					}
+					currentGuess = makeAGuess();
 				}
 			}
+			printIfDebugging("At End leftTodo="+leftTodo);
+			printIfDebugging("At End leftToExplore="+leftToExplore);
 			//else
 			//System.exit(1);
 		} else {
 			todo = "g";
 			currentGuess = (ArrayList<Integer>) makeGuess();
+			guessed=true;
 		}
 
 		printIfDebugging("");
 
 		return new GuesserAction(todo, currentGuess);
+	}
+
+/*
+ * This works on leftTodo and removes the first element from it
+ */
+	
+	public ArrayList<Integer> makeAGuess(){
+		ArrayList<Integer> guessToReturn=new ArrayList<Integer>();
+		ArrayList<Integer> currentRange=new ArrayList<Integer>();
+		ArrayList<Integer> inLineRange=new ArrayList<Integer>();
+		printIfDebugging("== makeAGuess === on entry leftTodo="+leftTodo);
+
+		ArrayList<ArrayList<Integer>> leftTodoRemove = new ArrayList<ArrayList<Integer>>();
+		guessToReturn=leftTodo.remove(0);
+		printIfDebugging("\t== guessToReturn ==="+guessToReturn);
+		currentRange= findRange(guessToReturn);
+		for(ArrayList<Integer> guessInLine :leftTodo) {
+			ArrayList<Integer> intersectionDomain=new ArrayList<Integer>();
+			intersectionDomain.addAll(guessToReturn);
+			intersectionDomain.retainAll(guessInLine);
+			if(intersectionDomain.isEmpty()) {
+				// domains are disjoint
+				inLineRange= findRange(guessInLine);
+				ArrayList<Integer> intersectionRange=new ArrayList<Integer>();
+				intersectionRange.addAll(currentRange);
+				intersectionRange.retainAll(inLineRange);
+				if(intersectionRange.isEmpty()) {
+					leftTodoRemove.add(guessInLine);
+					
+					Set<Integer> unionSet = new HashSet<Integer>();
+					unionSet.addAll(guessToReturn);unionSet.addAll(guessInLine);
+					guessToReturn.clear();guessToReturn.addAll(unionSet); 
+					printIfDebugging("\t\t== adding guessInLine ==="+guessInLine);
+					printIfDebugging("\t== +guessToReturn ==="+guessToReturn);
+					
+					currentRange= findRange(guessToReturn);
+				}
+			}
+		}
+		if(!leftTodoRemove.isEmpty())
+			leftTodo.removeAll(leftTodoRemove);
+		printIfDebugging("== \t chosen sets ->"+leftTodoRemove);
+		printIfDebugging("== makeAGuess === on exit leftTodo="+leftTodo);
+		return guessToReturn;
+	}
+	
+	public ArrayList<Integer> findRange(ArrayList<Integer> domainInQuestion) {
+		ArrayList<Integer> rangeToReturn =new ArrayList<Integer>();
+		Set<Integer> unionRangeSet = new HashSet<Integer>();
+		for(Integer i :domainInQuestion) {
+			unionRangeSet.addAll(possibilities.get(i));
+		}
+		rangeToReturn.addAll(unionRangeSet);
+		
+		printIfDebugging("\t*** findRange input ===domainInQuestion="+domainInQuestion);
+		printIfDebugging("\t*** findRange output ===rangeToReturn="+rangeToReturn);
+		printIfDebugging("\t*** Possibilities"+possibilities);
+
+		return rangeToReturn;
+	}
+
+	/*
+	 * This function will clean leftToDo of all domain elements whose value is known
+	 */
+	public void cleanLeftToDo() {
+		ArrayList<ArrayList<Integer>> leftTodoRemove = new ArrayList<ArrayList<Integer>>();
+		ArrayList<ArrayList<Integer>> leftTodoAdd = new ArrayList<ArrayList<Integer>>();
+		for(ArrayList<Integer> toQuery : leftTodo) {
+			ArrayList<Integer> toReplace =new  ArrayList<Integer>();
+			boolean replace=false;
+			for(Integer element :toQuery) {
+				if (possibilities.get(element).size()==1) {
+					replace=true;
+				} else {
+					toReplace.add(element);
+				}
+			}
+			if(replace){
+				leftTodoRemove.add(toQuery);
+				if(!toReplace.isEmpty())
+					leftTodoAdd.add(toQuery);
+			}
+		}
+
+		if(!leftTodoRemove.isEmpty())
+			leftTodo.removeAll(leftTodoRemove);
+		if(!leftTodoAdd.isEmpty())
+			leftTodoAdd.addAll(leftTodoAdd);
+
+
 	}
 
 	public static void main(String args[]){
@@ -132,6 +279,20 @@ public class MastermindGuesser2 extends Guesser {
 		return t;
 	}
 
+	/*
+	 * This function will update leftToExplore 
+	 * if the possibility of some element is one then it will be removed from leftToExplore
+	 */
+	public void updateLeftToExplore() {
+		ArrayList<Integer> toRemove =new ArrayList<Integer>();
+		for (Integer i : leftToExplore)
+			if(possibilities.get(i).size() == 1 ) {
+				toRemove.add(i);
+			}
+		leftToExplore.removeAll(toRemove);
+	}
+
+
 
 	public ArrayList<ArrayList<Integer>> makeBalancedGuess(List<Integer> toChooseFrom){
 		// currently taking n^0.5 , where n is total size of the toChooseFrom
@@ -139,46 +300,114 @@ public class MastermindGuesser2 extends Guesser {
 		 * It is toChooseFrom - elements whose value is already known
 		 */
 		ArrayList<Integer> condensedChoices =new ArrayList<Integer>();
+		ArrayList<Integer> firstElement =new ArrayList<Integer>();
 
 		ArrayList<ArrayList<Integer>> toReturn = new ArrayList<ArrayList<Integer>>();
+		ArrayList<ArrayList<Integer>> toReturnEnd = new ArrayList<ArrayList<Integer>>();
 		for(Integer i :toChooseFrom)
 			if(possibilities.get(i).size() > 1 ) {
+				if(firstElement.isEmpty())
+					firstElement.add(i);
 				condensedChoices.add(i);
 			}
 		int n = condensedChoices.size();
 		if(n<=2) {
 			toReturn.add(condensedChoices);
+			toReturn.add(firstElement);
 			return toReturn;
 		}
+		int first=condensedChoices.get(0);
+		condensedChoices.add(first);
 		int rootN =(int)Math.ceil(Math.sqrt(n));
 		int lowerIndex=0;
-		int upperIndex=0;
-		while(upperIndex<=n) {
-			upperIndex+=rootN;
+		int upperIndex=rootN;
+		boolean carryOn =true;
+		while(carryOn) {
+			//printIfDebugging("\ntoChooseFrom "+toChooseFrom+"   lowerIndex="+lowerIndex+"  upperIndex="+upperIndex);
 			ArrayList<Integer> toAdd=new ArrayList<Integer>();
 			toAdd.clear();
-			if(lowerIndex>=n) {
-				upperIndex+=rootN;
-				continue;
+
+			if(upperIndex>=n) {
+				if(lowerIndex<=n-1)
+					toAdd.addAll(condensedChoices.subList(lowerIndex,n));
+				carryOn=false;
 			}
-			
-			if(upperIndex>=n)
-				toAdd.addAll(condensedChoices.subList(lowerIndex,n));
 			else
 				toAdd.addAll(condensedChoices.subList(lowerIndex, upperIndex));
-			
-			if(!rules.containsKey(toAdd))
+
+			if(!rules.containsKey(toAdd) && !leftTodo.contains(toAdd) && !toAdd.isEmpty())
 				toReturn.add(toAdd);
-			else {
-            	ArrayList<ArrayList<Integer>> subGuess=new ArrayList<ArrayList<Integer>>(makeBalancedGuess(toAdd));
-            	if(!subGuess.isEmpty())
-			          	toReturn.addAll(subGuess);
-			}
-			lowerIndex+=rootN;
+			//else {
+			ArrayList<ArrayList<Integer>> subGuess=new ArrayList<ArrayList<Integer>>(makeBalancedGuess(toAdd));
+			if(!subGuess.isEmpty() && !subGuess.get(0).isEmpty())
+				toReturnEnd.addAll(subGuess);
+			//	}
+			lowerIndex=upperIndex;
+			upperIndex+=rootN;
 		}
-		
+		if(!toReturnEnd.isEmpty())
+			toReturn.addAll(toReturnEnd);
+
 		return toReturn;
 	}
+
+	public ArrayList<ArrayList<Integer>> makeBestGuessSets(List<Integer> toChooseFrom){
+		// currently taking n^0.5 , where n is total size of the toChooseFrom
+		/*
+		 * It is toChooseFrom - elements whose value is already known
+		 */
+		ArrayList<Integer> condensedChoices =new ArrayList<Integer>();
+		ArrayList<Integer> firstElement =new ArrayList<Integer>();
+
+		ArrayList<ArrayList<Integer>> toReturn = new ArrayList<ArrayList<Integer>>();
+		ArrayList<ArrayList<Integer>> toReturnEnd = new ArrayList<ArrayList<Integer>>();
+		for(Integer i :toChooseFrom)
+			if(possibilities.get(i).size() > 1 ) {
+				if(firstElement.isEmpty())
+					firstElement.add(i);
+				condensedChoices.add(i);
+			}
+		int n = condensedChoices.size();
+		if(n<=2) {
+			toReturn.add(condensedChoices);
+			toReturn.add(firstElement);
+			return toReturn;
+		}
+		int first=condensedChoices.get(0);
+		condensedChoices.add(first);
+		int rootN =(int)Math.ceil(Math.sqrt(n));
+		int lowerIndex=0;
+		int upperIndex=rootN;
+		boolean carryOn =true;
+		while(carryOn) {
+			//printIfDebugging("\ntoChooseFrom "+toChooseFrom+"   lowerIndex="+lowerIndex+"  upperIndex="+upperIndex);
+			ArrayList<Integer> toAdd=new ArrayList<Integer>();
+			toAdd.clear();
+
+			if(upperIndex>=n) {
+				if(lowerIndex<=n-1)
+					toAdd.addAll(condensedChoices.subList(lowerIndex,n));
+				carryOn=false;
+			}
+			else
+				toAdd.addAll(condensedChoices.subList(lowerIndex, upperIndex));
+
+			if(!rules.containsKey(toAdd) && !leftTodo.contains(toAdd) && !toAdd.isEmpty())
+				toReturn.add(toAdd);
+			//else {
+			ArrayList<ArrayList<Integer>> subGuess=new ArrayList<ArrayList<Integer>>(makeBalancedGuess(toAdd));
+			if(!subGuess.isEmpty() && !subGuess.get(0).isEmpty())
+				toReturnEnd.addAll(subGuess);
+			//	}
+			lowerIndex=upperIndex-1;
+			upperIndex+=rootN;
+		}
+		if(!toReturnEnd.isEmpty())
+			toReturn.addAll(toReturnEnd);
+
+		return toReturn;
+	}
+
 
 	public ArrayList<ArrayList<Integer>> makeSmallGuess(List<Integer> toChooseFrom){
 		int j = 0;
@@ -262,20 +491,32 @@ public class MastermindGuesser2 extends Guesser {
 		//rules.put((List<Integer>) currentGuess.clone(), (List<Integer>) alResult.clone());
 		//	printIfDebugging(possibilities);
 		printIfDebugging("\t###########\n\t"+currentGuess+" ->> "+alResult+"\n\t###########");
+		//	if(guessed)
+		//		return;
 		updateRules(currentGuess,alResult);
-		limitPossibilities(rules, possibilities);
+		//limitPossibilities(rules, possibilities);
 		printCurrentRules("After");
-		printIfDebugging("\n\t\t\t\t\t\tPossibilities"+possibilities);
+		printIfDebugging("\n\tPossibilities"+possibilities);
+		printQueryHistory(" ");
+
 
 		if(currentGuess.size() == alResult.size()){
 			ArrayList<ArrayList<Integer>> perms = solvePermutation(currentGuess);
-			if(leftToExplore.containsAll(currentGuess)){
+			//if(leftToExplore.containsAll(currentGuess)){
+			if(perms.size()>0 && perms.get(0).size()>0) {
 				leftTodo.addAll(perms);
-				leftToExplore.removeAll(currentGuess);
+				printIfDebugging("\n\t++ log leftTodo+="+perms);
 			}
+			//leftToExplore.removeAll(currentGuess);
+			//	}
 		}
 		else{
-			leftTodo.addAll(makeBalancedGuess(leftToExplore));
+			ArrayList<ArrayList<Integer>> perms = makeBalancedGuess(currentGuess);
+			if(perms.size()>0 && perms.get(0).size()>0) {
+				leftTodo.addAll(perms);
+				printIfDebugging("\n\t++ leftTodo+="+perms);
+			}
+			//	leftTodo.addAll(makeBalancedGuess(leftToExplore));
 			// should this be commented ? leftToExplore.removeAll(currentGuess);
 		}
 	}
@@ -415,7 +656,7 @@ public class MastermindGuesser2 extends Guesser {
 					possibilities.put(newRuleDomain.get(0), newRuleRange);
 				else
 					updatePossibilities(newRuleDomain, newRuleRange);
-				//updateQueryHistory(newRuleDomain);
+				updateQueryHistory(newRuleDomain);
 			}
 		} else {
 			if(! ( rules.containsKey(newRuleDomain) && rules.get(newRuleDomain).equals(newRuleRange) ) ) {
@@ -433,7 +674,7 @@ public class MastermindGuesser2 extends Guesser {
 					}
 					else
 						updatePossibilities(newRuleDomain, newRuleRange);
-					//updateQueryHistory(newRuleDomain);
+					updateQueryHistory(newRuleDomain);
 				}
 			}
 			Map<ArrayList<Integer>, ArrayList<Integer>> rulesToBeAdded=new HashMap<ArrayList<Integer>,ArrayList<Integer>>();
@@ -489,7 +730,7 @@ public class MastermindGuesser2 extends Guesser {
 						if(domainUnion.size()>=rangeUnion.size())
 							rulesToBeAdded.put(domainUnion, rangeUnion);
 						else
-							System.out.print("ERROR --");
+							printIfDebugging("ERROR --");
 						printIfDebugging("domainUnion="+domainUnion+" rangeUnion="+rangeUnion+
 								"\n\tnewRuleDomain="+newRuleDomain+" newRuleRange="+newRuleRange+
 								"\n\truleDomain="+ruleDomain+"  ruleRange="+ruleRange);
@@ -521,7 +762,7 @@ public class MastermindGuesser2 extends Guesser {
 							if(domainR1MI.size()>=rangeR1MI.size())
 								rulesToBeAdded.put(domainR1MI, rangeR1MI);
 							else
-								System.out.print("ERROR");
+								printIfDebugging("ERROR");
 							printIfDebugging("domainR1MI="+domainR1MI+" rangeR1MI="+rangeR1MI+
 									"\n\tnewRuleDomain="+newRuleDomain+" newRuleRange="+newRuleRange+
 									"\n\truleDomain="+ruleDomain+"  ruleRange="+ruleRange);
@@ -541,9 +782,9 @@ public class MastermindGuesser2 extends Guesser {
 						) {
 
 					ArrayList<Integer> domainR2MI =new ArrayList<Integer>();
-					domainR2MI.addAll(newRuleDomain); domainR2MI.removeAll(domainIntersection);
+					domainR2MI.addAll(ruleDomain); domainR2MI.removeAll(domainIntersection);
 					ArrayList<Integer> rangeR2MI =new ArrayList<Integer>();
-					rangeR2MI.addAll(newRuleRange);rangeR2MI.removeAll(rangeIntersection);
+					rangeR2MI.addAll(ruleRange);rangeR2MI.removeAll(rangeIntersection);
 					if (domainR2MI.size()>0 && rangeR2MI.size()>0) {
 						if(! ( 
 								( rules.containsKey(domainR2MI) && rules.get(domainR2MI).equals(rangeR2MI)  ) 
@@ -553,7 +794,7 @@ public class MastermindGuesser2 extends Guesser {
 							if(domainR2MI.size()>=rangeR2MI.size())
 								rulesToBeAdded.put(domainR2MI, rangeR2MI);
 							else
-								System.out.print("ERROR ");
+								printIfDebugging("ERROR ");
 							printIfDebugging("domainR2MI="+domainR2MI+" rangeR2MI="+rangeR2MI+
 									"\n\tnewRuleDomain="+newRuleDomain+" newRuleRange="+newRuleRange+
 									"\n\truleDomain="+ruleDomain+"  ruleRange="+ruleRange);
@@ -585,7 +826,7 @@ public class MastermindGuesser2 extends Guesser {
 							if(domainUMI.size()>=rangeUMI.size())
 								rulesToBeAdded.put(domainUMI, rangeUMI);
 							else
-								System.out.print("ERROR");
+								printIfDebugging("ERROR");
 							printIfDebugging("domainUMI="+domainUMI+" rangeUMI="+rangeUMI+
 									"\n\tnewRuleDomain="+newRuleDomain+" newRuleRange="+newRuleRange+
 									"\n\truleDomain="+ruleDomain+"  ruleRange="+ruleRange);
@@ -601,12 +842,12 @@ public class MastermindGuesser2 extends Guesser {
 					if( !(rules.containsKey(ruleDomain) && rules.get(ruleDomain).equals(ruleRange) ) ) {
 						Collections.sort(ruleDomain);
 						Collections.sort(ruleRange);
-						rules.put(ruleDomain,ruleRange);
+						//rules.put(ruleDomain,ruleRange);
 						if(ruleDomain.size()==ruleRange.size() && ruleRange.size() ==1)
 							possibilities.put(ruleDomain.get(0), ruleRange);
 						else
 							updatePossibilities(ruleDomain, ruleRange);
-						//	updateQueryHistory((ArrayList<Integer>)ruleDomain);
+						updateQueryHistory((ArrayList<Integer>)ruleDomain);
 					}
 				}
 			}
@@ -618,5 +859,45 @@ public class MastermindGuesser2 extends Guesser {
 			System.out.println(stringToPrint);
 		}
 	}
+	/*
+	 *  This method will update the queryHistory
+	 *   the Idea is that if we are having rules like -
+	 *   ([1,2,3]->[2,4]) and ([3,9]->2,8]) then
+	 *   we should not query for [1,2,3,9] as it will give no additional information 
+	 *   so Query History is the set of all those set of domains
+	 *   whose information we already have in the rule set or can drawn from he rule set
+	 */
+	public void updateQueryHistory(ArrayList<Integer> queryToBeAdded) {
+		/*
+		if(queryHistory.size()>=1) {
+			Set<ArrayList<Integer>> queriesToAdd =new HashSet <ArrayList<Integer>>(); 
+			for(ArrayList<Integer> previousQuery :queryHistory) {
+				ArrayList<Integer> combinedQuery =new ArrayList<Integer>();
+				combinedQuery.addAll(previousQuery);
+				combinedQuery.addAll(queryToBeAdded);
+				combinedQuery=new ArrayList<Integer>(new TreeSet<Integer>(combinedQuery));
+				Collections.sort(combinedQuery);
+				if(!queryHistory.contains(combinedQuery)) 
+					queriesToAdd.add(combinedQuery);
+			}
+			queryHistory.addAll(queriesToAdd);
+		}*/
+		if(!queryHistory.contains(queryToBeAdded))
+			queryHistory.add(queryToBeAdded);
+
+	}
+
+	/*
+	 *  To print the current query History 
+	 *  (supporting method)
+	 */
+	public void printQueryHistory(String message) {
+		printIfDebugging("\n\t\t\t\tQuery History  "+message);
+		for (ArrayList<Integer> singleQuery : queryHistory) {
+			printIfDebugging("\t\t\t\t"+singleQuery);
+		}
+		printIfDebugging("\n\t\t\t\tQuery END  "+message+"\n");
+	}
+
 
 }

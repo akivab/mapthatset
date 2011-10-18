@@ -82,7 +82,6 @@ public class MastermindGuesser2 extends Guesser {
 				leftTodo.clear();
 				leftTodo.addAll(leftTodoNoDups);
 			}
-			//else
 			if(!rules.isEmpty())
 				leftTodo.removeAll(rules.keySet());
 			//printIfDebugging("\n\nAt begin After Rule leftTodo="+leftTodo);
@@ -99,8 +98,6 @@ public class MastermindGuesser2 extends Guesser {
 					leftTodo.addAll(perms);
 				}
 
-				//leftTodo.add(new ArrayList<Integer>(leftToExplore));
-				//leftToExplore.clear();
 			}
 			//			if(leftTodo.size()>2*leftToExplore.size()) {
 			//				leftTodo.clear();
@@ -246,20 +243,20 @@ public class MastermindGuesser2 extends Guesser {
 		//printIfDebugging("Helper methods work.");
 	}
 
-	public ArrayList<ArrayList<Integer>> trySplitting(List<Integer> toChooseFrom) {
-		ArrayList<Integer> t1 = new ArrayList<Integer>();
-		ArrayList<Integer> t2 = new ArrayList<Integer>();
-		for(int i = 0; i < toChooseFrom.size(); i++)
-			if(possibilities.get(toChooseFrom.get(i)).size()!=1)
-				if(i < toChooseFrom.size()/2)
-					t1.add(toChooseFrom.get(i));
-				else
-					t2.add(toChooseFrom.get(i));
-		ArrayList<ArrayList<Integer>> toReturn = new ArrayList<ArrayList<Integer>>();
-		toReturn.add(t1);
-		toReturn.add(t2);
-		return toReturn;
-	}
+//	public ArrayList<ArrayList<Integer>> trySplitting(List<Integer> toChooseFrom) {
+//		ArrayList<Integer> t1 = new ArrayList<Integer>();
+//		ArrayList<Integer> t2 = new ArrayList<Integer>();
+//		for(int i = 0; i < toChooseFrom.size(); i++)
+//			if(possibilities.get(toChooseFrom.get(i)).size()!=1)
+//				if(i < toChooseFrom.size()/2)
+//					t1.add(toChooseFrom.get(i));
+//				else
+//					t2.add(toChooseFrom.get(i));
+//		ArrayList<ArrayList<Integer>> toReturn = new ArrayList<ArrayList<Integer>>();
+//		toReturn.add(t1);
+//		toReturn.add(t2);
+//		return toReturn;
+//	}
 
 	public boolean isNewRule(ArrayList<Integer> obj){
 		boolean b = false;
@@ -293,7 +290,13 @@ public class MastermindGuesser2 extends Guesser {
 	}
 
 
-
+/*
+ * This function makes a  recursive call to itself  i.e
+ * If it gets as an input - [1,2,3,4,5,6] it will return
+ *  [1,2,3] [4,5,6] makeBalancedGuess([1,2,3]) makeBalancedGuess([4,5,6]) 
+ *  
+ * 
+ */
 	public ArrayList<ArrayList<Integer>> makeBalancedGuess(List<Integer> toChooseFrom){
 		// currently taking n^0.5 , where n is total size of the toChooseFrom
 		/*
@@ -337,11 +340,9 @@ public class MastermindGuesser2 extends Guesser {
 
 			if(!rules.containsKey(toAdd) && !leftTodo.contains(toAdd) && !toAdd.isEmpty())
 				toReturn.add(toAdd);
-			//else {
 			ArrayList<ArrayList<Integer>> subGuess=new ArrayList<ArrayList<Integer>>(makeBalancedGuess(toAdd));
 			if(!subGuess.isEmpty() && !subGuess.get(0).isEmpty())
 				toReturnEnd.addAll(subGuess);
-			//	}
 			lowerIndex=upperIndex;
 			upperIndex+=rootN;
 		}
@@ -351,6 +352,7 @@ public class MastermindGuesser2 extends Guesser {
 		return toReturn;
 	}
 
+	
 	public ArrayList<ArrayList<Integer>> makeBestGuessSets(List<Integer> toChooseFrom){
 		// currently taking n^0.5 , where n is total size of the toChooseFrom
 		/*

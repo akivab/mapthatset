@@ -243,20 +243,7 @@ public class MastermindGuesser2 extends Guesser {
 		//printIfDebugging("Helper methods work.");
 	}
 
-//	public ArrayList<ArrayList<Integer>> trySplitting(List<Integer> toChooseFrom) {
-//		ArrayList<Integer> t1 = new ArrayList<Integer>();
-//		ArrayList<Integer> t2 = new ArrayList<Integer>();
-//		for(int i = 0; i < toChooseFrom.size(); i++)
-//			if(possibilities.get(toChooseFrom.get(i)).size()!=1)
-//				if(i < toChooseFrom.size()/2)
-//					t1.add(toChooseFrom.get(i));
-//				else
-//					t2.add(toChooseFrom.get(i));
-//		ArrayList<ArrayList<Integer>> toReturn = new ArrayList<ArrayList<Integer>>();
-//		toReturn.add(t1);
-//		toReturn.add(t2);
-//		return toReturn;
-//	}
+
 
 	public boolean isNewRule(ArrayList<Integer> obj){
 		boolean b = false;

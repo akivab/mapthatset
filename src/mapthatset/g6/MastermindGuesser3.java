@@ -10,7 +10,7 @@ import java.util.Random;
 import mapthatset.sim.Guesser;
 import mapthatset.sim.GuesserAction;
 
-public class MastermindGuesser2 extends Guesser {
+public class MastermindGuesser3 extends Guesser {
 	Map<Integer, List<Integer>> possibilities;
 	Map<List<Integer>, List<Integer>> rules;
 
@@ -55,8 +55,9 @@ public class MastermindGuesser2 extends Guesser {
 		String todo = "q";
 		// System.out.println(possibilities);
 		if (!solutionReached() && !leftTodo.isEmpty())
-			while(wasSeen(currentGuess = leftTodo.remove(0)));
-				
+			while (wasSeen(currentGuess = leftTodo.remove(0)))
+				;
+
 		else {
 			todo = "g";
 			currentGuess = (ArrayList<Integer>) makeGuess();
@@ -89,8 +90,8 @@ public class MastermindGuesser2 extends Guesser {
 		choice.add(options.get(j));
 		return wasSeen(choice);
 	}
-	
-	public boolean wasSeen(ArrayList<Integer> choice){
+
+	public boolean wasSeen(ArrayList<Integer> choice) {
 		for (List<Integer> rule : rules.keySet())
 			if (rule.containsAll(choice) && choice.containsAll(rule))
 				return true;
@@ -122,10 +123,12 @@ public class MastermindGuesser2 extends Guesser {
 		// randomly pick 2 elements from options
 		ArrayList<ArrayList<Integer>> toReturn = new ArrayList<ArrayList<Integer>>();
 		int i = 0, j = 0;
-		while (i < options.size() && possibilities.get(options.get(i)).size() == 1)
+		while (i < options.size()
+				&& possibilities.get(options.get(i)).size() == 1)
 			i++;
-		while ( j < options.size()  && (j <= i || possibilities.get(options.get(j)).size() == 1
-				|| wasSeen(options, i, j)))
+		while (j < options.size()
+				&& (j <= i || possibilities.get(options.get(j)).size() == 1 || wasSeen(
+						options, i, j)))
 			j++;
 		ArrayList<Integer> tmp = new ArrayList<Integer>();
 		if (i < options.size())
@@ -147,9 +150,11 @@ public class MastermindGuesser2 extends Guesser {
 		for (Iterator<Integer> itr = leftToExplore.iterator(); itr.hasNext();)
 			if (possibilities.get(itr.next()).size() == 1)
 				itr.remove();
+		System.out.println("limit possibilities");
 		limitPossibilities(rules, possibilities);
 
 		if (currentGuess.size() == alResult.size() && currentGuess.size() > 2) {
+			System.out.println("solve permutation");
 			ArrayList<ArrayList<Integer>> perms = solvePermutation(currentGuess);
 			if (leftToExplore.containsAll(currentGuess)) {
 				leftTodo.addAll(perms);
@@ -161,22 +166,23 @@ public class MastermindGuesser2 extends Guesser {
 			if (leftTodo.size() > 1)
 				return;
 			// else, try to come up with something clever...
-			if(rules.keySet().size() < 2 && possibilities.keySet().size() > 10){
+			if (rules.keySet().size() < 2 && possibilities.keySet().size() > 10) {
 				// try splitting!
-				ArrayList<Integer> first = new ArrayList<Integer>();
-				ArrayList<Integer> second = new ArrayList<Integer>();
-				for(int i = 0; i < leftToExplore.size(); i++)
-					if(i > leftToExplore.size()/2)
-						first.add(leftToExplore.get(i));
-					else
-						second.add(leftToExplore.get(i));
-				leftTodo.add(first);
-				leftTodo.add(second);
-			}
-			else{
+				/*
+				 * ArrayList<Integer> first = new ArrayList<Integer>();
+				 * ArrayList<Integer> second = new ArrayList<Integer>(); for(int
+				 * i = 0; i < leftToExplore.size(); i++) if(i >
+				 * leftToExplore.size()/2) first.add(leftToExplore.get(i)); else
+				 * second.add(leftToExplore.get(i)); leftTodo.add(first);
+				 * leftTodo.add(second);
+				 */
+				System.out.println("make crossword queries");
+				leftTodo.addAll(makeCrosswordQueries(currentGuess));
+			} else {
+				System.out.println("make small guesses");
 				ArrayList<ArrayList<Integer>> guess = makeSmallGuesses(leftToExplore);
 				leftTodo.addAll(guess);
-				
+
 			}
 		}
 	}
@@ -230,6 +236,30 @@ public class MastermindGuesser2 extends Guesser {
 			if (partitions.size() != n)
 				toReturn.add((ArrayList<Integer>) partitions.clone());
 		}
+		return toReturn;
+	}
+
+	public ArrayList<ArrayList<Integer>> makeCrosswordQueries(
+			ArrayList<Integer> list) {
+		ArrayList<ArrayList<Integer>> toReturn = new ArrayList<ArrayList<Integer>>();
+
+		int n = list.size();
+		int queryLength = (int) Math.sqrt(n);
+
+		for (int k = 0; k < queryLength; k += 1) {
+			ArrayList<Integer> query = new ArrayList<Integer>();
+			for (int j = 0; k + j < n; j += queryLength)
+				query.add(list.get(k + j));
+			toReturn.add(query);
+		}
+
+		for (int k = 0; k < n; k += queryLength) {
+			ArrayList<Integer> query = new ArrayList<Integer>();
+			for (int j = 0; j < queryLength; j += 1)
+				query.add(list.get(k + j));
+			toReturn.add(query);
+		}
+
 		return toReturn;
 	}
 }

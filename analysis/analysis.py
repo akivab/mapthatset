@@ -1,7 +1,7 @@
+types = {}
 def get_data():
     m = open("AllMappingUpToHundred.txt", "r")
     count = 0
-    types = {}
     challenges = {}
     for j in m.readlines():
         z = j.split()
@@ -27,7 +27,8 @@ def rank(arr, t, player):
         if player == j[0]:
             score = j[1]
     for other in contest:
-        if other[0] != player and other[1] > score:
+#        print other
+        if other[0] != player and other[1] < score:
             rank+=1
     return rank
 
@@ -54,28 +55,32 @@ def analyze():
 def show_analysis():
     import pylab
     r, c, t = analyze()
-    print r, c, t
+#    print r, c, t
     maps = {}
     for i in t:
         count = 1
         bins = {}
         for m in t[i]:
-            bins = pylab.hist([z[1] for z in t[i][m]], bins=60)
+            bins = pylab.hist([z[0] for z in t[i][m]], bins=5, range=(1,5))
             if m not in maps:
                 maps[m] = {}
+            
+            #print m,maps[m]
             maps[m][i] = bins
     pylab.clf()
     for m in maps:
         for i in maps[m]:
-            print maps[m][i][0]
-            pylab.plot([float(j) * 10/6 for j in xrange(60)], maps[m][i][0],  label="group %d" % i)
-        pylab.ylim([0, 30])
-        pylab.xlim([0, 100])
-        pylab.xlabel("query size (% of N)")
+            if i==7:
+                print m, t[i][m], maps[m][i][0]
+#            print maps[m][i][0]
+            pylab.plot([j+1 for j in xrange(5)], maps[m][i][0],  label="group %d" % i)
+        pylab.ylim([0, 60])
+        pylab.xlim([1, 5])
+        pylab.xlabel("rank #")
         pylab.ylabel("amount")
-        pylab.legend(loc=2)
-        pylab.title("scores for %s map" % m)
-        pylab.savefig("scorefor%s.png" % m)
+        pylab.legend()
+        pylab.title("ranks for %s map" % m)
+        pylab.savefig("rankfor%s.png" % m)
         pylab.show()
         #pylab.clf()
 

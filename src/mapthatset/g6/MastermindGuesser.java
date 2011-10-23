@@ -128,7 +128,7 @@ public class MastermindGuesser extends Guesser {
 				rules.put(newRuleDomain, newRuleRange);
 				updatePossibilities(newRuleDomain, newRuleRange);
 			}
-		} else {
+		} else { 
 			if(! ( rules.containsKey(newRuleDomain) && rules.get(newRuleDomain).equals(newRuleRange) ) ) {
 				// if the new rule is not in in the rule set - add it 
 				if(newRuleDomain.size()>0 && newRuleRange.size()>0) {
@@ -181,7 +181,7 @@ public class MastermindGuesser extends Guesser {
 						if(! ( 
 								( rules.containsKey(domainUMI) && rules.get(domainUMI).equals(rangeUMI)  ) 
 								||
-								( rulesToBeAdded.containsKey(domainUMI) && rulesToBeAdded.get(domainUMI).equals(rangeUMI)  )
+								( rulesToBeAdd[11, 13, 20, 24, 37, 47, 53, 57, 58, 60, 61, 65, 72, 75, 78, 81, 82, 88, 91, 92, 93, 95, 97, 98, 100]ed.containsKey(domainUMI) && rulesToBeAdded.get(domainUMI).equals(rangeUMI)  )
 								)) {
 							// if the result of UMI is a new rule -add it in the rule list
 							rulesToBeAdded.put(domainUMI, rangeUMI);

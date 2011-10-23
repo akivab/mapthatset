@@ -52,8 +52,6 @@ public class MastermindGuesser3 extends Guesser {
 	 */
 	@Override
 	public GuesserAction nextAction() {
-		System.out.println(leftToExplore);
-
 		String todo = "q";
 		// System.out.println(possibilities);
 		if (!solutionReached() && !leftTodo.isEmpty())
@@ -141,27 +139,6 @@ public class MastermindGuesser3 extends Guesser {
 			toReturn.add(tmp);
 		return toReturn;
 	}
-	
-	public ArrayList<ArrayList<Integer>> makeCrossword(
-			ArrayList<Integer> options) {
-		// randomly pick 2 elements from options
-		ArrayList<ArrayList<Integer>> toReturn = new ArrayList<ArrayList<Integer>>();
-		int i = 0, j = 0;
-		for(j = 0; j < (int) Math.sqrt(options.size()); j++){
-			ArrayList<Integer> tmp = new ArrayList<Integer>();
-			for(i = j; i < options.size(); i += (int) Math.sqrt(options.size()))
-				tmp.add(options.get(i));
-			toReturn.add(tmp);
-		}
-		
-		for(i = 0; i < options.size(); i += (int) Math.sqrt(options.size())){
-			ArrayList<Integer> tmp = new ArrayList<Integer>();
-			for(j = i; j < (int) Math.sqrt(options.size()) + i; j++)
-				tmp.add(options.get(j));
-			toReturn.add(tmp);
-		}
-		return toReturn;
-	}
 
 	@Override
 	public void setResult(ArrayList<Integer> alResult) {
@@ -175,21 +152,17 @@ public class MastermindGuesser3 extends Guesser {
 				itr.remove();
 		limitPossibilities(rules, possibilities);
 
-		if (currentGuess.size() == alResult.size() && leftTodo.size() < 2) {
+		if (currentGuess.size() == alResult.size() && currentGuess.size() > 2) {
 			ArrayList<ArrayList<Integer>> perms = solvePermutation(currentGuess);
 			if (leftToExplore.containsAll(currentGuess)) {
 				leftTodo.addAll(perms);
 				leftToExplore.removeAll(currentGuess);
 			}
 		} else {
-			System.out.println("Testing");
 			// figure out what to do.
 			// if left in todo, ignore
 			if (leftTodo.size() > 1)
 				return;
-			else if(rules.keySet().size() < 2){
-				leftTodo.addAll(makeCrossword(leftToExplore));
-			}
 			// else, try to come up with something clever...
 			/*if (rules.keySet().size() < 2 && possibilities.keySet().size() > 10) {
 				// try splitting!
@@ -203,10 +176,9 @@ public class MastermindGuesser3 extends Guesser {
 				leftTodo.add(first);
 				leftTodo.add(second);
 			} else {*/
-			else{
 				ArrayList<ArrayList<Integer>> guess = makeSmallGuesses(leftToExplore);
 				leftTodo.addAll(guess);
-			}
+
 			//}
 		}
 	}
@@ -220,11 +192,6 @@ public class MastermindGuesser3 extends Guesser {
 					List<Integer> g2 = new ArrayList<Integer>();
 					g1.addAll(r1);
 					g1.retainAll(r2);
-					// [1,2,3,4] -> [2,3,4]
-					// [2,3,6] -> [4,5]
-					// g1 -> [2,3]
-					// g2 -> [4]
-					
 					g2.addAll(mapping.get(r1));
 					g2.retainAll(mapping.get(r2));
 

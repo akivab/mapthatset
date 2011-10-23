@@ -173,9 +173,15 @@ public class MastermindGuesser3 extends Guesser {
 		for (Iterator<Integer> itr = leftToExplore.iterator(); itr.hasNext();)
 			if (possibilities.get(itr.next()).size() == 1)
 				itr.remove();
+		System.out.println("limit possibilities");
 		limitPossibilities(rules, possibilities);
 
+<<<<<<< HEAD
 		if (currentGuess.size() == alResult.size() && leftTodo.size() < 2) {
+=======
+		if (currentGuess.size() == alResult.size() && currentGuess.size() > 2) {
+			System.out.println("solve permutation");
+>>>>>>> 5d5a532bc5221e6ab81ea2a56c39f02beee955f5
 			ArrayList<ArrayList<Integer>> perms = solvePermutation(currentGuess);
 			if (leftToExplore.containsAll(currentGuess)) {
 				leftTodo.addAll(perms);
@@ -191,6 +197,7 @@ public class MastermindGuesser3 extends Guesser {
 				leftTodo.addAll(makeCrossword(leftToExplore));
 			}
 			// else, try to come up with something clever...
+<<<<<<< HEAD
 			/*if (rules.keySet().size() < 2 && possibilities.keySet().size() > 10) {
 				// try splitting!
 				ArrayList<Integer> first = new ArrayList<Integer>();
@@ -206,6 +213,25 @@ public class MastermindGuesser3 extends Guesser {
 			else{
 				ArrayList<ArrayList<Integer>> guess = makeSmallGuesses(leftToExplore);
 				leftTodo.addAll(guess);
+=======
+			if (rules.keySet().size() < 2 && possibilities.keySet().size() > 10) {
+				// try splitting!
+				/*
+				 * ArrayList<Integer> first = new ArrayList<Integer>();
+				 * ArrayList<Integer> second = new ArrayList<Integer>(); for(int
+				 * i = 0; i < leftToExplore.size(); i++) if(i >
+				 * leftToExplore.size()/2) first.add(leftToExplore.get(i)); else
+				 * second.add(leftToExplore.get(i)); leftTodo.add(first);
+				 * leftTodo.add(second);
+				 */
+				System.out.println("make crossword queries");
+				leftTodo.addAll(makeCrosswordQueries(currentGuess));
+			} else {
+				System.out.println("make small guesses");
+				ArrayList<ArrayList<Integer>> guess = makeSmallGuesses(leftToExplore);
+				leftTodo.addAll(guess);
+
+>>>>>>> 5d5a532bc5221e6ab81ea2a56c39f02beee955f5
 			}
 			//}
 		}
@@ -265,6 +291,30 @@ public class MastermindGuesser3 extends Guesser {
 			if (partitions.size() != n)
 				toReturn.add((ArrayList<Integer>) partitions.clone());
 		}
+		return toReturn;
+	}
+
+	public ArrayList<ArrayList<Integer>> makeCrosswordQueries(
+			ArrayList<Integer> list) {
+		ArrayList<ArrayList<Integer>> toReturn = new ArrayList<ArrayList<Integer>>();
+
+		int n = list.size();
+		int queryLength = (int) Math.sqrt(n);
+
+		for (int k = 0; k < queryLength; k += 1) {
+			ArrayList<Integer> query = new ArrayList<Integer>();
+			for (int j = 0; k + j < n; j += queryLength)
+				query.add(list.get(k + j));
+			toReturn.add(query);
+		}
+
+		for (int k = 0; k < n; k += queryLength) {
+			ArrayList<Integer> query = new ArrayList<Integer>();
+			for (int j = 0; j < queryLength; j += 1)
+				query.add(list.get(k + j));
+			toReturn.add(query);
+		}
+
 		return toReturn;
 	}
 }

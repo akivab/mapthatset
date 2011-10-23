@@ -99,25 +99,16 @@ public class MastermindGuesser2 extends Guesser {
 				}
 
 			}
-			//			if(leftTodo.size()>2*leftToExplore.size()) {
-			//				leftTodo.clear();
-			//				for(Integer lTe :leftToExplore) {
-			//					ArrayList<Integer> temp =new ArrayList<Integer>();
-			//					temp.add(lTe);
-			//					leftTodo.add(temp);
-			//				}
-			//				printIfDebugging("At exchange leftTodo="+leftTodo);
-			//
-			//			}
 			printIfDebugging("At Mid leftTodo="+leftTodo);
 			printIfDebugging("At Mid leftToExplore="+leftToExplore);
 			if(!leftTodo.isEmpty()){
+				leftTodo.addAll(makeCrosswordQueries(leftToExplore));
 				currentGuess = makeAGuess();
 				while( (!leftTodo.isEmpty() ) &&( rules.containsKey(currentGuess) ||queryHistory.contains(currentGuess))) {
 					printIfDebugging("== currentGuess ==="+currentGuess);
-					/*printIfDebugging("\t  !isNewRule(currentGuess)="+!isNewRule(currentGuess)+
-							"  !leftTodo.isEmpty()="+!leftTodo.isEmpty()+"    rules.containsKey(currentGuess)="+
-							rules.containsKey(currentGuess));*/
+					//printIfDebugging("\t  !isNewRule(currentGuess)="+!isNewRule(currentGuess)+
+					//		"  !leftTodo.isEmpty()="+!leftTodo.isEmpty()+"    rules.containsKey(currentGuess)="+
+					//		rules.containsKey(currentGuess));
 					if (leftTodo.isEmpty()) {
 						ArrayList<ArrayList<Integer>> perms = makeBalancedGuess(leftToExplore);
 						if(perms.size()>0 && perms.get(0).size()>0) {
@@ -138,7 +129,7 @@ public class MastermindGuesser2 extends Guesser {
 			guessed=true;
 		}
 
-		printIfDebugging("");
+		System.out.println("");//printIfDebugging("");
 
 		return new GuesserAction(todo, currentGuess);
 	}
@@ -335,6 +326,30 @@ public class MastermindGuesser2 extends Guesser {
 		}
 		if(!toReturnEnd.isEmpty())
 			toReturn.addAll(toReturnEnd);
+
+		return toReturn;
+	}
+	
+	public ArrayList<ArrayList<Integer>> makeCrosswordQueries(
+			ArrayList<Integer> list) {
+		ArrayList<ArrayList<Integer>> toReturn = new ArrayList<ArrayList<Integer>>();
+
+		int n = list.size();
+		int queryLength = (int) Math.sqrt(n);
+
+		for (int k = 0; k < queryLength; k += 1) {
+			ArrayList<Integer> query = new ArrayList<Integer>();
+			for (int j = 0; k + j < n; j += queryLength)
+				query.add(list.get(k + j));
+			toReturn.add(query);
+		}
+
+		for (int k = 0; k < n - queryLength; k += queryLength) {
+			ArrayList<Integer> query = new ArrayList<Integer>();
+			for (int j = 0; j < queryLength; j += 1)
+				query.add(list.get(k + j));
+			toReturn.add(query);
+		}
 
 		return toReturn;
 	}
